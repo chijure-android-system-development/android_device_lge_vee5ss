@@ -36,6 +36,15 @@ running device.
   entry because this TWRP 4.4 tree does not parse `datamedia` as a filesystem.
 - `TW_NO_REBOOT_BOOTLOADER := true` is set because the LG-E450g does not expose
   standard fastboot.
+- The MT6575 kernel leaves the button-backlight LED in a `timer` blink trigger by
+  default. `postrecoveryboot.sh` clears the trigger and turns the LED off at boot;
+  `postscreenblank.sh` / `postscreenunblank.sh` keep it in sync with screen state.
+
+## Entering recovery mode
+
+With the device off, press and hold **Vol+**, **Vol−**, the **Action** button (center key), and **Power**
+simultaneously. When the LG logo appears, release **Power** while keeping the other three buttons
+held until TWRP loads.
 
 ## Build
 

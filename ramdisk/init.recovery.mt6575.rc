@@ -1,4 +1,0 @@
-on boot
-    # Disable button-backlight LED blink trigger set by the kernel
-    write /sys/class/leds/button-backlight/trigger none
-    write /sys/class/leds/button-backlight/brightness 0

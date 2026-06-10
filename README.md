@@ -37,8 +37,7 @@ running device.
 - `TW_NO_REBOOT_BOOTLOADER := true` is set because the LG-E450g does not expose
   standard fastboot.
 - The MT6575 kernel leaves the button-backlight LED in a `timer` blink trigger by
-  default. `postrecoveryboot.sh` clears the trigger and turns the LED off at boot;
-  `postscreenblank.sh` / `postscreenunblank.sh` keep it in sync with screen state.
+  default. `postrecoveryboot.sh` clears the trigger and turns the LED off at boot.
 
 ## Entering recovery mode
 

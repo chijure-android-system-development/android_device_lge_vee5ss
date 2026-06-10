@@ -1,0 +1,18 @@
+# TWRP fstab para LG-E450g (MediaTek MT6575 / vee5ss)
+# Particiones verificadas con /proc/dumchar_info del dispositivo
+
+# Particiones de sistema (por block device - confirmados con df en dispositivo vivo)
+/system      ext4    /dev/block/mmcblk0p8    flags=display="System";backup=1;wipeingui
+/cache       ext4    /dev/block/mmcblk0p9    flags=display="Cache";backup=1;wipeduringfactoryreset;wipeingui
+/data        ext4    /dev/block/mmcblk0p10   flags=display="Data";backup=1;wipeduringfactoryreset;wipeingui
+
+# MicroSD externo
+/external_sd vfat    /dev/block/mmcblk1p1    flags=display="Micro SD";storage;wipeingui;removable
+
+# Particiones MTK via dispositivos virtuales (backups importantes)
+/boot        emmc    /dev/bootimg            flags=display="Boot";backup=1
+/recovery    emmc    /dev/recovery           flags=display="Recovery";wipeingui
+/nvram       emmc    /dev/nvram              flags=display="NVRAM";backup=1
+/logo        emmc    /dev/logo               flags=display="Logo";backup=1
+/uboot       emmc    /dev/uboot              flags=display="Uboot";backup=1
+/secro       emmc    /dev/sec_ro             flags=display="Sec_RO";subpartitionof=/nvram;backup=1

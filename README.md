@@ -82,6 +82,8 @@ nodo MTK `/dev/bootimg`.
 | MicroSD externa | ✅ Montada en `/storage/sdcard1` via vold.fstab |
 | Almacenamiento interno | ✅ FUSE daemon corriendo, `/storage/sdcard0` montado |
 | Settings > Storage | ✅ Abre sin crash |
+| Brillo LCD | ✅ `lights.default.so` + `libproxyhal.so` stock cargados |
+| LEDs notificación (RGB) | ✅ LP5521 R/G/B via HAL, blink con timer trigger |
 | boot.img reconstruido | ✅ Flasheado con mtkbootimg |
 
 ---
@@ -253,6 +255,29 @@ el espacio en `/storage/emulated/legacy`.
 
 **Resultado:** `init.svc.sdcard=running`, `/dev/fuse /storage/sdcard0` montado,
 `/dev/block/mmcblk1p1 /storage/sdcard1` montado, Settings > Storage abre.
+
+### 14. Brillo bloqueado en 0 (`lights.default.so` no cargaba)
+**Síntoma:** La pantalla arrancaba con brillo 0. Settings > Display no tenía efecto.  
+**Causa:** `lights.default.so` del stock MTK depende de `libproxyhal.so`, que no
+estaba en el vendor tree. El error en logcat:
+```
+Cannot load library: libproxyhal.so not found
+```
+Sin HAL de luces, `LightService` no puede controlar el backlight LCD, los LEDs
+RGB del LP5521 ni el backlight de los botones.
+
+**Fix:** Extraer `libproxyhal.so` y `lights.default.so` del backup TWRP stock
+(`system.ext4.win` de `/home/chijure/Documentos/2026-06-16--08-31-05_JZO54K/`)
+y añadirlos al vendor tree. `libproxyhal.so` solo depende de `libbinder`,
+`libutils`, `liblog`, `libc` — todas librerías estándar de CM10.
+
+**Archivos añadidos:**
+- `vendor/lge/vee5ss/proprietary/lib/libproxyhal.so`
+- `vendor/lge/vee5ss/proprietary/lib/hw/lights.default.so` (ya estaba, ahora carga)
+
+**Resultado:** `D/lights: set_led_state`, `blink_red`, `blink_green` en logcat.
+Brillo ajustable desde Settings > Display. LEDs RGB (LP5521) funcionales con
+blink por hardware via `timer` trigger en sysfs.
 
 ---
 

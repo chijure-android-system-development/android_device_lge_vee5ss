@@ -38,6 +38,10 @@
 /dev/bma150               0660   system     system
 /dev/lightsensor          0660   system     system
 /dev/touch                0660   root       root
+# MTK ALPS sensor hub — usada por sensors.mt6575.so para accel/mag/orient/prox
+/dev/hwmsensor            0660   system     system
+/dev/gsensor              0660   system     system
+/dev/msensor              0660   system     system
 
 # Modem
 /dev/ccci_mdx_sta         0660   radio      radio

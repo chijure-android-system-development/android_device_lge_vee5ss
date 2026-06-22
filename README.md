@@ -83,7 +83,7 @@ nodo MTK `/dev/bootimg`.
 | Almacenamiento interno | ✅ FUSE daemon corriendo, `/storage/sdcard0` montado |
 | Settings > Storage | ✅ Abre sin crash |
 | Brillo LCD | ✅ `lights.default.so` + `libproxyhal.so` stock cargados |
-| LEDs notificación (RGB) | ✅ LP5521 R/G/B via HAL, blink con timer trigger |
+| LEDs notificación (RGB) | ✅ LP5521 R/G/B via HAL custom `lights.mt6575`, blink via thread |
 | boot.img reconstruido | ✅ Flasheado con mtkbootimg |
 
 ---
@@ -278,6 +278,59 @@ y añadirlos al vendor tree. `libproxyhal.so` solo depende de `libbinder`,
 **Resultado:** `D/lights: set_led_state`, `blink_red`, `blink_green` en logcat.
 Brillo ajustable desde Settings > Display. LEDs RGB (LP5521) funcionales con
 blink por hardware via `timer` trigger en sysfs.
+
+### 15. LED RGB seguía parpadeando al encender la pantalla
+
+**Síntoma:** El LED R (botón home, usado como LED de notificación) parpadeaba
+en rojo mientras la pantalla estaba apagada (comportamiento correcto para
+notificaciones pendientes), pero al encender la pantalla el blink **no se
+detenía**. `cat /sys/class/leds/R/trigger` mostraba `[timer]` con `brightness=255`
+incluso cuando Android ya había enviado `colorRGB=00000000` al HAL.
+
+**Causa:** Bug en `lights.default.so` stock con el trigger `timer` del kernel Linux.
+El driver de LEDs del kernel mantiene un campo interno `blink_brightness` separado
+del campo `brightness`. Cuando se activa el trigger `timer`:
+
+```
+echo timer > /sys/class/leds/R/trigger   # activa timer → blink_brightness = max_brightness
+echo 125   > /sys/class/leds/R/delay_on
+echo 2875  > /sys/class/leds/R/delay_off
+echo 255   > /sys/class/leds/R/brightness
+```
+
+Al apagar el LED, el HAL stock solo hacía:
+```
+echo 0 > /sys/class/leds/R/brightness   # INCORRECTO — blink_brightness sigue en 255
+```
+
+El timer del kernel sigue activo y, en la fase "on" del ciclo, escribe
+`blink_brightness` (255) al registro del LED — el hardware sigue parpadeando.
+La solución correcta requiere:
+```
+echo none > /sys/class/leds/R/trigger   # limpia blink_brightness
+echo 0    > /sys/class/leds/R/brightness
+```
+
+**Problema adicional:** `lights.default.so` depende de `libproxyhal.so` y
+corre en system_server como uid=system. Los archivos `trigger`, `delay_on` y
+`delay_off` en sysfs tienen permisos `root:root 0644` → escritura denegada.
+Solo `brightness` estaba chowned a `system:system` en `init.mt6575.rc`.
+
+**Fix:** HAL custom `lights.mt6575.so` en `device/lge/vee5ss/lights/`:
+- Usa thread POSIX para el blink (toggle manual de `brightness` con `usleep`)
+- Solo escribe en `brightness` — ya tiene permisos correctos
+- `stop_blink()` en toda llamada a `set_light_rgb()`: detiene el thread
+  inmediatamente antes de aplicar el nuevo estado
+- Nombrado `lights.mt6575` → HAL loader lo encuentra ANTES que `lights.default`
+  (el loader prueba en orden: `ro.hardware`, `ro.product.board`, `default`)
+
+**Archivos nuevos:**
+- `device/lge/vee5ss/lights/lights.c`
+- `device/lge/vee5ss/lights/Android.mk`
+
+**Resultado:** Al encender la pantalla, `NotificationManagerService` llama
+`set_light_rgb(0,0,0)` → HAL detiene el thread de blink → R=0, G=0, B=0.
+El LED se apaga correctamente.
 
 ---
 
@@ -617,6 +670,8 @@ arrancando; el metodo verificado es escribir al nodo MTK `/dev/bootimg`.
 | `rootdir/recovery.fstab` | particiones para recovery |
 | `overlay/frameworks/base/core/res/res/xml/storage_list.xml` | define volúmenes para MountService y Settings > Storage |
 | `overlay/frameworks/base/core/res/res/values/config.xml` | config WiFi y animación |
+| `lights/lights.c` | HAL custom LP5521: blink via pthread, evita bug de timer kernel |
+| `lights/Android.mk` | build del HAL como `lights.mt6575` (precedencia sobre `lights.default`) |
 | `mtkbootimg/` | host tool para boot images MTK |
 
 ---

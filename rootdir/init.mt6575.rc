@@ -6,20 +6,18 @@ on early-init
 
 on init
     write /dev/kmsg "CMBOOT: init\n"
-    # Almacenamiento interno vía datamedia
-    mkdir /mnt/shell/emulated 0700 shell shell
-    mkdir /storage/emulated 0555 root root
+    # Almacenamiento interno via sdcard FUSE daemon — monta en /storage/sdcard0
+    mkdir /storage 0755 root root
+    mkdir /storage/sdcard0 0775 system system
 
-    export EXTERNAL_STORAGE /storage/emulated/legacy
-    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
-    export EMULATED_STORAGE_TARGET /storage/emulated
+    export EXTERNAL_STORAGE /storage/sdcard0
 
     # MicroSD externo
     mkdir /storage/sdcard1 0775 system system
     export SECONDARY_STORAGE /storage/sdcard1
 
-    symlink /storage/emulated/legacy /sdcard
-    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/sdcard0 /sdcard
+    symlink /storage/sdcard0 /mnt/sdcard
     symlink /storage/sdcard1 /external_sd
     symlink /storage/sdcard1 /mnt/external_sd
 
@@ -189,8 +187,8 @@ service media /system/bin/mediaserver
     group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
     ioprio rt 4
 
-# sdcard daemon (almacenamiento interno vía FUSE)
-service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
+# sdcard daemon — emula FAT en /data/media via FUSE, monta en /storage/sdcard0
+service sdcard /system/bin/sdcard /data/media 1023 1023
     class late_start
 
 service wpa_supplicant /system/bin/wpa_supplicant \

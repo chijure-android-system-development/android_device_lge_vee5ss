@@ -7,16 +7,7 @@
     <!-- Almacenamiento interno vía datamedia -->
     <bool name="config_batterySdCardAccessibility">false</bool>
 
-    <!-- MicroSD externo disponible -->
-    <bool name="config_externalStorageRemovable">true</bool>
-
     <!-- WiFi: el driver MTK necesita scan activo para asociarse -->
     <bool name="config_wifi_background_scan_support">false</bool>
     <integer name="config_wifi_framework_scan_interval">15000</integer>
-
-    <!-- Network: solo GSM, sin LTE -->
-    <integer name="config_networkNotifHysteresis">2</integer>
-
-    <!-- Deshabilitar atlas en dispositivo low-RAM (evita OOM en SurfaceFlinger) -->
-    <bool name="config_enableTranslucentDecor">false</bool>
 </resources>

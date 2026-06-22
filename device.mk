@@ -6,6 +6,8 @@ PRODUCT_PACKAGES += \
     libkeystore_client \
     sensorservice
 
+DEVICE_PACKAGE_OVERLAYS := device/lge/vee5ss/overlay
+
 PRODUCT_DEVICE       := vee5ss
 PRODUCT_NAME         := cm_vee5ss
 PRODUCT_BRAND        := lge
@@ -26,7 +28,8 @@ PRODUCT_COPY_FILES += \
     device/lge/vee5ss/rootdir/init.mt6575.usb.rc:root/init.mt6575.usb.rc \
     device/lge/vee5ss/rootdir/ueventd.mt6575.rc:root/ueventd.mt6575.rc \
     system/core/rootdir/init.usb.rc:root/init.usb.rc \
-    system/core/rootdir/init.trace.rc:root/init.trace.rc
+    system/core/rootdir/init.trace.rc:root/init.trace.rc \
+    device/lge/vee5ss/vold.fstab:system/etc/vold.fstab
 
 # ---- Permisos de hardware ----
 PRODUCT_COPY_FILES += \

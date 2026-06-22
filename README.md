@@ -63,7 +63,7 @@ nodo MTK `/dev/bootimg`.
 
 ---
 
-## Estado actual (2026-06-21)
+## Estado actual (2026-06-22)
 
 | Subsistema | Estado |
 | --- | --- |
@@ -79,7 +79,10 @@ nodo MTK `/dev/bootimg`.
 | `gsm0710muxd` | ⏳ No arranca hasta resolver ccci_mdinit |
 | `/dev/radio/ptty*` | ⏳ No existen hasta que corre gsm0710muxd |
 | `gsm.sim.state` | ⏳ UNKNOWN |
-| boot.img reconstruido | ⏳ Pendiente con mtkbootimg |
+| MicroSD externa | ✅ Montada en `/storage/sdcard1` via vold.fstab |
+| Almacenamiento interno | ✅ FUSE daemon corriendo, `/storage/sdcard0` montado |
+| Settings > Storage | ✅ Abre sin crash |
+| boot.img reconstruido | ✅ Flasheado con mtkbootimg |
 
 ---
 
@@ -145,6 +148,111 @@ completamente inmune al SIGHUP del shell padre.
 hardware activo; el rmmod corrompe esa máquina de estados.  
 **Regla permanente:** NUNCA hacer `rmmod ccci*` con el modem activo o tras un WDT.
 El único reset seguro de CCCI+modem es reiniciar el dispositivo.
+
+### 11. MicroSD no montaba (`No such file or directory`)
+**Síntoma:** Vold montaba `/dev/block/mmcblk1p1` en `/mnt/secure/staging` (OK),
+luego fallaba: `Failed to move mount /mnt/secure/staging -> /mnt/sdcard (No such
+file or directory)`. El contenido de la SD nunca aparecía.
+
+**Causas encadenadas (tres independientes):**
+
+1. **`/storage/` nunca creado.** El ramdisk no incluye el directorio `/storage/`.
+   `init.mt6575.rc` en `on init` hacía `mkdir /storage/emulated` y
+   `mkdir /storage/sdcard1`, pero el rootfs montado como `ro` en ese punto.
+   El resultado: ambas llamadas fallan silenciosamente, `/storage/` nunca existe,
+   y los symlinks `/mnt/sdcard → /storage/emulated/legacy` y
+   `/mnt/external_sd → /storage/sdcard1` apuntan a paths inexistentes.
+
+2. **Vold usa `AutoVolume("sdcard", "/mnt/sdcard")` por defecto.** El binario vold
+   de CM10 para MT6575 NO lee `fstab.mt6575` para configurar volúmenes; busca
+   `/etc/vold.fstab` y si no lo encuentra (línea 184 de `system/vold/main.cpp`)
+   crea un `AutoVolume` hardcodeado con label `"sdcard"` y mount point `"/mnt/sdcard"`.
+   Esto hace que vold intente mover el mount al symlink `/mnt/sdcard`, que resuelve
+   a `/storage/emulated/legacy` — path inexistente (causa 1).
+
+3. **El daemon `sdcard` (FUSE) es `class late_start`.** No arranca hasta que para la
+   animación de boot. Aunque `/storage/` existiera, `ccci_fsd` necesita la estructura
+   FUSE antes de que el modem la pida; el ordering es incorrecto en arranques
+   con la SD ya presente.
+
+**Path sysfs de la SD:** `/devices/platform/mtk-sd.1/mmc_host/mmc1`
+(verificado con `cat /sys/block/mmcblk1/device/uevent` y `readlink -f
+/sys/block/mmcblk1/device`).
+
+**Fix — dos cambios en fuente + un archivo nuevo:**
+
+_1. `init.mt6575.rc` — agregar `mkdir /storage` antes de los subdirectorios:_
+```
+on init
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage 0755 root root          ← NUEVO
+    mkdir /storage/emulated 0555 root root
+    mkdir /storage/sdcard1 0775 system system
+```
+
+_2. `device/lge/vee5ss/vold.fstab` — archivo nuevo:_
+```
+dev_mount sdcard1 /storage/sdcard1 auto /devices/platform/mtk-sd.1/mmc_host/mmc1
+```
+
+_3. `device.mk` — añadir a PRODUCT_COPY_FILES:_
+```make
+device/lge/vee5ss/vold.fstab:system/etc/vold.fstab
+```
+
+**Resultado:** Vold lee `vold.fstab`, crea un `DirectVolume` con label `sdcard1`,
+monta la SD directamente en `/storage/sdcard1` (1.9 GB, 434 MB libres, confirmado
+en vivo). El symlink `/mnt/external_sd → /storage/sdcard1` funciona correctamente.
+
+### 12. Settings > Storage se cerraba (`getVolumeState` IllegalArgumentException)
+**Síntoma:** Abrir Settings > Storage forzaba el cierre de la aplicación.  
+**Causa:** `MountService.getVolumeState()` lanza `IllegalArgumentException` cuando
+el path consultado no está en su mapa `mVolumeStates`. El mapa se construye desde
+`storage_list.xml` (vía recursos de framework) y desde eventos de vold.
+Sin un `storage_list.xml` de device, el AOSP por defecto usa `/mnt/sdcard` como
+primary. Vold reporta `/storage/sdcard1`. Settings preguntaba por paths que
+MountService no reconocía → excepción.
+
+**Fix — `storage_list.xml` en overlay del device:**  
+Nuevo archivo `overlay/frameworks/base/core/res/res/xml/storage_list.xml`:
+```xml
+<storage android:mountPoint="/storage/sdcard0"
+         android:storageDescription="@string/storage_internal"
+         android:emulated="true" android:mtpReserve="100" android:primary="true" />
+<storage android:mountPoint="/storage/sdcard1"
+         android:storageDescription="@string/storage_sd_card"
+         android:removable="true" />
+```
+Con `emulated="true"`, MountService pre-popula `/storage/sdcard0` como
+`MEDIA_MOUNTED` al arrancar, sin esperar evento de vold. El overlay requiere
+que `DEVICE_PACKAGE_OVERLAYS := device/lge/vee5ss/overlay` esté en `device.mk`
+(faltaba — añadido).
+
+### 13. `statfs failed: ENOENT` — daemon sdcard crasheaba en cada boot
+**Síntoma:** Aunque Settings > Storage ya no lanzaba `IllegalArgumentException`,
+`StorageMeasurement` crasheaba con `statfs failed: ENOENT` al intentar medir
+el espacio en `/storage/emulated/legacy`.  
+**Causas encadenadas:**
+1. El daemon sdcard se reiniciaba en bucle porque la llamada era:
+   `/system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated`
+   pero el binario (`sdcard.c`, `MOUNT_POINT="/storage/sdcard0"`) usa la sintaxis
+   **ICS-era**: `sdcard [-l -f] <path> <uid> <gid>` → "too many arguments".
+2. El path de almacenamiento primario configurado (`/storage/emulated/legacy`)
+   no coincidía con donde el daemon realmente monta (`/storage/sdcard0`).
+3. El directorio `/mnt/shell/emulated` (padre del mount point en la llamada
+   incorrecta) tampoco existía porque `/mnt/shell` no se creaba en init.rc.
+
+**Fix — alineación completa de paths a `/storage/sdcard0`:**
+- `init.mt6575.rc` `on init`: `mkdir /storage/sdcard0 0775 system system`
+- `EXTERNAL_STORAGE` → `/storage/sdcard0` (antes `/storage/emulated/legacy`)
+- Symlinks `/sdcard` y `/mnt/sdcard` → `/storage/sdcard0`
+- Eliminar exports `EMULATED_STORAGE_SOURCE/TARGET` (no aplican en JB 4.1.2)
+- Eliminar `mkdir /mnt/shell` y `/mnt/shell/emulated` (ya no se usan)
+- Servicio sdcard: `sdcard /data/media 1023 1023` (sintaxis correcta)
+- `storage_list.xml` mountPoint: `/storage/sdcard0`
+
+**Resultado:** `init.svc.sdcard=running`, `/dev/fuse /storage/sdcard0` montado,
+`/dev/block/mmcblk1p1 /storage/sdcard1` montado, Settings > Storage abre.
 
 ---
 
@@ -414,10 +522,26 @@ Líneas de investigación:
 ### Reconstruir boot.img
 
 El `init.mt6575.rc` actual en el árbol contiene los cambios necesarios:
+- `mkdir /storage 0755 root root` + `mkdir /storage/sdcard0` en `on init`
+- `EXTERNAL_STORAGE=/storage/sdcard0`, symlinks `/sdcard` y `/mnt/sdcard` → sdcard0
 - Nodos CCCI via `mknod` en `on boot`
 - Servicios `ccci_rpcd`, `ccci_fsd`, `ccci_mdinit`, `gsm0710muxd` declarados
   con `class core` y `oneshot`
+- Servicio `sdcard /data/media 1023 1023` con sintaxis ICS correcta
 - `chmod 0666 /dev/pvrsrvkm` permanente en `ueventd.mt6575.rc`
+- `vold.fstab` en `device/lge/vee5ss/` → `system/etc/vold.fstab` (fix SD externa)
+
+Cuando se toca `init.mt6575.rc` **y** el overlay de framework:
+```bash
+cd /home/chijure/cm10
+. build/envsetup.sh
+lunch cm_vee5ss-eng
+rm -f out/target/product/vee5ss/boot.img out/target/product/vee5ss/ramdisk.img \
+       out/target/product/vee5ss/root/init.mt6575.rc \
+       out/target/product/vee5ss/system/framework/framework-res.apk \
+       out/target/product/vee5ss/obj/APPS/framework-res_intermediates/package.apk
+make bootimage framework-res
+```
 
 Comando para reconstruir solo el boot.img:
 
@@ -460,11 +584,14 @@ arrancando; el metodo verificado es escribir al nodo MTK `/dev/bootimg`.
 | `BoardConfig.mk` | plataforma MT6575, particiones, kernel y boot image |
 | `bootimg.mk` | receta custom para `mtkbootimg` |
 | `kernel` | kernel prebuilt activo usado por `TARGET_PREBUILT_KERNEL` |
-| `rootdir/init.mt6575.rc` | init principal: insmod, mknod CCCI, servicios CCCI |
+| `rootdir/init.mt6575.rc` | init principal: insmod, mknod CCCI, servicios, paths de storage |
 | `rootdir/init.mt6575.usb.rc` | USB, MTP y ADB |
 | `rootdir/ueventd.mt6575.rc` | permisos de nodos `/dev` |
 | `rootdir/fstab.mt6575` | montajes de Android |
+| `vold.fstab` | config de vold — `sdcard1` → `/storage/sdcard1` via sysfs path MTK |
 | `rootdir/recovery.fstab` | particiones para recovery |
+| `overlay/frameworks/base/core/res/res/xml/storage_list.xml` | define volúmenes para MountService y Settings > Storage |
+| `overlay/frameworks/base/core/res/res/values/config.xml` | config WiFi y animación |
 | `mtkbootimg/` | host tool para boot images MTK |
 
 ---

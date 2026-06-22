@@ -1,0 +1,99 @@
+# proprietary-files.txt — LG L5 II (vee5ss)
+# Verificado con adb shell ls del stock JB 4.1.2 (vee5ss_sca_com_g JZO54K)
+
+# ---- Display / Gralloc ----
+lib/hw/gralloc.default.so
+lib/hw/hwcomposer.mt6575.so
+lib/hw/mmumapper.mt6575.so
+
+# ---- EGL / GPU (PowerVR SGX) ----
+lib/egl/egl.cfg
+lib/egl/libGLES_android.so
+
+# ---- Audio ----
+lib/hw/audio.primary.default.so
+lib/hw/audio_policy.default.so
+lib/libaudiosetting.so
+lib/libaudiocustparam.so
+lib/libaudiocompensationfilter.so
+lib/libbessound_mtk.so
+# libtinyalsa la compila CM10 desde external/tinyalsa
+lib/libacdk.so
+
+# ---- Cámara ----
+lib/hw/camera.default.so
+# libcamera_client y libcameraservice los compila CM10 desde frameworks/av
+lib/libcameracustom.so
+lib/libcameraprofile.so
+lib/libcamalgo.so
+
+# ---- Sensores ----
+lib/hw/sensors.mt6575.so
+
+# ---- GPS ----
+lib/hw/gps.default.so
+lib/libagpssupl.so
+bin/mtk_agpsd
+
+# ---- Bluetooth (MT6620 combo) ----
+lib/libbluetooth_mtk.so
+lib/libbluetoothem_mtk.so
+lib/libbtcust.so
+lib/libbtcusttable.so
+lib/libbtpcm.so
+lib/libbluetoothdrv.so
+# etc/bluetooth/*.conf — instalados por el build de CM10 vía generic_no_telephony.mk
+
+# ---- WiFi (MT6620 combo) ----
+etc/wifi/wpa_supplicant.conf
+etc/wifi/p2p_supplicant.conf
+
+# ---- Lights / Power ----
+lib/hw/lights.default.so
+lib/hw/power.default.so
+
+# ---- RIL / Modem ----
+# libril, libreference-ril y rild los compila CM10 desde hardware/ril
+lib/librilmtk.so
+lib/libutilrilmtk.so
+lib/mtk-ril.so
+
+# ---- NVRAM ----
+lib/libcustom_nvram.so
+lib/libnvram.so
+lib/libnvram_daemon_callback.so
+lib/libmtk_devinfo.so
+bin/nvram_agent_binder
+
+# ---- MTK driver bridge ----
+lib/libmtk_drvb.so
+
+# ---- Módulos del kernel ----
+# GPU PowerVR SGX (crítico — sin esto no hay display)
+lib/modules/pvrsrvkm.ko
+lib/modules/mtklfb.ko
+# Combo chip MTK6620: BT + WiFi + GPS
+lib/modules/mtk_stp_wmt.ko
+lib/modules/mtk_stp_wmt_mt6628.ko
+lib/modules/mtk_stp_bt.ko
+lib/modules/mtk_stp_bt_mt6628.ko
+lib/modules/mtk_stp_gps.ko
+lib/modules/mtk_stp_gps_mt6628.ko
+lib/modules/mtk_stp_uart.ko
+lib/modules/mtk_stp_uart_mt6628.ko
+lib/modules/mtk_wmt_wifi.ko
+lib/modules/mtk_wmt_wifi_mt6628.ko
+lib/modules/wlan.ko
+lib/modules/wlan_mt6620.ko
+lib/modules/mtk_hif_sdio.ko
+lib/modules/mtk_hif_sdio_mt6628.ko
+# Modem CCCI
+lib/modules/ccci.ko
+lib/modules/ccci_plat.ko
+lib/modules/ccmni.ko
+# Misc kernel drivers
+lib/modules/devinfo.ko
+lib/modules/m4u.ko
+lib/modules/mtk_drvb.ko
+lib/modules/sec.ko
+lib/modules/vcodec_kernel_driver.ko

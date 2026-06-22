@@ -84,6 +84,7 @@ nodo MTK `/dev/bootimg`.
 | Settings > Storage | ✅ Abre sin crash |
 | Brillo LCD | ✅ `lights.default.so` + `libproxyhal.so` stock cargados |
 | LEDs notificación (RGB) | ✅ LP5521 R/G/B via HAL custom `lights.mt6575`, blink via thread |
+| Sensores (accel/mag/orient/prox) | ✅ `sensors.mt6575.so` via `/dev/hwmsensor`, permisos fijos en boot |
 | boot.img reconstruido | ✅ Flasheado con mtkbootimg |
 
 ---
@@ -331,6 +332,52 @@ Solo `brightness` estaba chowned a `system:system` en `init.mt6575.rc`.
 **Resultado:** Al encender la pantalla, `NotificationManagerService` llama
 `set_light_rgb(0,0,0)` → HAL detiene el thread de blink → R=0, G=0, B=0.
 El LED se apaga correctamente.
+
+### 16. Sensores con "Error activating sensor X (Operation not permitted)"
+
+**Síntoma:** `SensorService` detectaba los 4 sensores (LGE Accelerometer,
+LGE Magnetic, LGE Orientation, LGE Proximity) pero al intentar activarlos:
+```
+E/SensorService: Error activating sensor 0 (Operation not permitted)
+E/SensorService: Error activating sensor 1 (Operation not permitted)
+E/SensorService: Error activating sensor 2 (Operation not permitted)
+E/SensorService: Error activating sensor 7 (Operation not permitted)
+```
+
+**Causa:** `sensors.mt6575.so` usa exclusivamente `/dev/hwmsensor` como interfaz
+del hub ALPS MT6575 (confirmado con `strings sensors.mt6575.so | grep /dev/`).
+El nodo existía pero tenía permisos `root:root 0600`. El SensorService corre
+dentro de system_server (uid=system, gid=system) y no podía abrirlo.
+
+Los nodos `/dev/gsensor` y `/dev/msensor` también tenían `0600 root:root`.
+La entrada en `ueventd.mt6575.rc` para `ALPS_IO` y `bma150` correspondía a
+versiones antiguas del HAL; el HAL actual solo usa `hwmsensor`.
+
+**Fix — dos líneas en dos archivos del ramdisk:**
+
+`ueventd.mt6575.rc`:
+```
+/dev/hwmsensor    0660  system  system
+/dev/gsensor      0660  system  system
+/dev/msensor      0660  system  system
+```
+
+`init.mt6575.rc` en `on boot` (belt-and-suspenders para primer boot):
+```
+chown system system /dev/hwmsensor
+chmod 0660 /dev/hwmsensor
+```
+
+**Resultado verificado tras reboot:**
+```
+crw-rw---- system system 10, 45 hwmsensor
+D/Sensors: open_sensors: name: poll!
+D/Sensors: hwm__activate: handle 0, enable or disable 1!  ← acelerómetro
+D/Sensors: hwm__activate: handle 1, enable or disable 1!  ← magnético
+D/Sensors: hwm__activate: handle 2, enable or disable 1!  ← orientación
+D/Sensors: hwm__activate: handle 7, enable or disable 1!  ← proximidad
+```
+Sin errores de activación. Todos los sensores disponibles para apps.
 
 ---
 

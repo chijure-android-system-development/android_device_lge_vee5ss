@@ -77,4 +77,6 @@ PRODUCT_PACKAGES += \
     lights.mt6575 \
     power.mt6575 \
     rild \
-    libril
+    libril \
+    libbessound_mtk \
+    nvram_audio_init

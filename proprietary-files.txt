@@ -22,10 +22,23 @@ lib/libacdk.so
 
 # ---- Cámara ----
 lib/hw/camera.default.so
-# libcamera_client y libcameraservice los compila CM10 desde frameworks/av
+lib/libcamera_client.so
+# libcameraservice lo compila CM10 desde frameworks/av
 lib/libcameracustom.so
 lib/libcameraprofile.so
 lib/libcamalgo.so
+lib/libmhal.so
+lib/libmhalmdp.so
+lib/libmhalscenario.so
+lib/libmhaldrv.so
+lib/libmhalcontent.so
+lib/libmhalpipe.so
+lib/libmexif.so
+lib/libeis.so
+lib/libmpoencoder.so
+lib/libmpo.so
+lib/libutilitysw.so
+lib/libmatv_cust.so
 
 # ---- Sensores ----
 lib/hw/sensors.mt6575.so

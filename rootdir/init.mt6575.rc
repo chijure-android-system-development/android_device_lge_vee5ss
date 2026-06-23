@@ -68,6 +68,34 @@ on boot
     insmod /system/lib/modules/mtk_wmt_wifi.ko
     insmod /system/lib/modules/wlan.ko
 
+    # Camera / MHAL / MDP nodes. M4U registers in /proc/devices but does not
+    # always emit a uevent on this stock kernel, so create it explicitly.
+    mknod /dev/M4U_device c 188 0
+    chown system camera /dev/kd_camera_hw
+    chown system camera /dev/FM50AF
+    chown system camera /dev/kd_camera_flashlight
+    chown system camera /dev/camera-resmgr
+    chown system camera /dev/camera-sysram
+    chown system camera /dev/camera-isp
+    chown system camera /dev/camera-eis
+    chown system camera /dev/camera-fdvt
+    chown system media /dev/mt-mdp
+    chown system camera /dev/mtk_jpeg
+    chown system media /dev/M4U_device
+    chown root media /proc/clkmgr/mipi_test
+    chown system media /sys/bus/platform/drivers/mem_bw_ctrl/concurrency_scenario
+    chmod 0660 /dev/kd_camera_hw
+    chmod 0660 /dev/FM50AF
+    chmod 0660 /dev/kd_camera_flashlight
+    chmod 0660 /dev/camera-resmgr
+    chmod 0660 /dev/camera-sysram
+    chmod 0660 /dev/camera-isp
+    chmod 0660 /dev/camera-eis
+    chmod 0660 /dev/camera-fdvt
+    chmod 0660 /dev/mt-mdp
+    chmod 0444 /dev/mtk_jpeg
+    chmod 0444 /dev/M4U_device
+
     # CCCI modem device nodes
     mknod /dev/ccci_fs c 178 0
     mknod /dev/ccci_rpc c 178 1
@@ -191,8 +219,11 @@ service ril-daemon /system/bin/rild
 
 service media /system/bin/mediaserver
     class main
-    user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
+    socket soc_vt_tcv dgram 660 media system
+    socket soc_vt_stk dgram 660 media system
+    socket soc_vt_svc dgram 660 media system
+    user root
+    group audio camera graphics inet net_bt net_bt_admin net_bw_acct drmrpc media sdcard_rw nvram ccci radio
     ioprio rt 4
 
 # sdcard daemon — emula FAT en /data/media via FUSE, monta en /storage/sdcard0

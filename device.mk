@@ -29,7 +29,8 @@ PRODUCT_COPY_FILES += \
     device/lge/vee5ss/rootdir/ueventd.mt6575.rc:root/ueventd.mt6575.rc \
     system/core/rootdir/init.usb.rc:root/init.usb.rc \
     system/core/rootdir/init.trace.rc:root/init.trace.rc \
-    device/lge/vee5ss/vold.fstab:system/etc/vold.fstab
+    device/lge/vee5ss/vold.fstab:system/etc/vold.fstab \
+    device/lge/vee5ss/audio_policy.conf:system/etc/audio_policy.conf
 
 # ---- Keymaps stock MTK/LG ----
 PRODUCT_COPY_FILES += \
@@ -49,6 +50,11 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
 
+# ---- Media profiles ----
+PRODUCT_COPY_FILES += \
+    device/lge/vee5ss/media_profiles.xml:system/etc/media_profiles.xml \
+    device/lge/vee5ss/media_codecs.xml:system/etc/media_codecs.xml
+
 # ---- Propiedades del sistema ----
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240 \
@@ -66,6 +72,8 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 
 # ---- Paquetes ----
 PRODUCT_PACKAGES += \
+    audio.primary.mt6575 \
+    camera.default \
     lights.mt6575 \
     power.mt6575 \
     rild \

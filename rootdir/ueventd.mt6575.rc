@@ -20,10 +20,18 @@
 /dev/ttyMT1               0660   root       root
 /dev/ttyMT2               0660   bluetooth  bluetooth
 
-# Cámara
-/dev/mt6575-isp           0660   system     camera
+# Camara / MHAL / MDP
 /dev/kd_camera_hw         0660   system     camera
 /dev/FM50AF               0660   system     camera
+/dev/kd_camera_flashlight 0660   system     camera
+/dev/camera-resmgr        0660   system     camera
+/dev/camera-sysram        0660   system     camera
+/dev/camera-isp           0660   system     camera
+/dev/camera-eis           0660   system     camera
+/dev/camera-fdvt          0660   system     camera
+/dev/mt-mdp               0660   system     media
+/dev/mtk_jpeg             0444   system     camera
+/dev/M4U_device           0444   system     media
 
 # Audio
 /dev/eac                  0660   system     audio

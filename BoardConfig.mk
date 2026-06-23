@@ -21,6 +21,8 @@ BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_CMDLINE := androidboot.hardware=mt6575
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
 
+TARGET_RELEASETOOLS_EXTENSIONS := device/lge/vee5ss
+
 # mtkbootimg: genera headers MTK antes del kernel y ramdisk
 BOARD_CUSTOM_BOOTIMG    := true
 BOARD_CUSTOM_MKBOOTIMG  := $(HOST_OUT_EXECUTABLES)/mtkbootimg$(HOST_EXECUTABLE_SUFFIX)

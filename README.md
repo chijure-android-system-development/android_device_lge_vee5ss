@@ -379,6 +379,53 @@ D/Sensors: hwm__activate: handle 7, enable or disable 1!  ← proximidad
 ```
 Sin errores de activación. Todos los sensores disponibles para apps.
 
+### 17. HOME fisico no despertaba la pantalla
+
+**Sintoma:** el boton HOME fisico funcionaba con la pantalla encendida, pero no
+despertaba el telefono cuando la pantalla estaba apagada.
+
+**Causa:** CM10 no estaba instalando los keymaps stock MTK/LG. El teclado
+`mtk-kpd` se identifica como vendor/product `2454:6575`, por lo que Android
+busca primero `/system/usr/keylayout/Vendor_2454_Product_6575.kl` antes de
+`mtk-kpd.kl`. Al no existir ese alias, terminaba usando `Generic.kl`.
+
+Ademas, el layout stock tenia etiquetas LG que CM10 no reconoce (`HOMEPAGE`,
+`SSK`, `QMEMO`). Si se copiaba tal cual, `KeyLayoutMap` fallaba al parsearlo y
+tambien caia a `Generic.kl`.
+
+**Diagnostico:**
+```
+dumpsys input
+  Device 1: mtk-kpd
+    KeyLayoutFile: /system/usr/keylayout/Generic.kl
+
+E/KeyLayoutMap: /system/usr/keylayout/mtk-kpd.kl:39:
+Expected key code label, got 'HOMEPAGE'.
+```
+
+**Fix:** importar desde stock `mtk-kpd.kl`, `ACCDET.kl` y `mtk-kpd.kcm`;
+instalar tambien el alias `Vendor_2454_Product_6575.kl`; mapear HOME con wake:
+```
+key 102   HOME              WAKE_DROPPED
+key 172   HOME              WAKE_DROPPED
+```
+
+Las teclas stock no soportadas por CM10 quedan comentadas para que el layout
+cargue correctamente:
+```
+# key 249   SSK             VIRTUAL
+# key 250   QMEMO
+```
+
+**Resultado verificado tras reboot:**
+```
+dumpsys input
+  Device 1: mtk-kpd
+    KeyLayoutFile: /system/usr/keylayout/Vendor_2454_Product_6575.kl
+    KeyCharacterMapFile: /system/usr/keychars/mtk-kpd.kcm
+```
+HOME fisico despierta la pantalla correctamente.
+
 ---
 
 ## Arquitectura CCCI (conocimiento critico)

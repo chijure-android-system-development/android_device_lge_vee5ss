@@ -31,6 +31,13 @@ PRODUCT_COPY_FILES += \
     system/core/rootdir/init.trace.rc:root/init.trace.rc \
     device/lge/vee5ss/vold.fstab:system/etc/vold.fstab
 
+# ---- Keymaps stock MTK/LG ----
+PRODUCT_COPY_FILES += \
+    device/lge/vee5ss/keylayout/mtk-kpd.kl:system/usr/keylayout/mtk-kpd.kl \
+    device/lge/vee5ss/keylayout/mtk-kpd.kl:system/usr/keylayout/Vendor_2454_Product_6575.kl \
+    device/lge/vee5ss/keylayout/ACCDET.kl:system/usr/keylayout/ACCDET.kl \
+    device/lge/vee5ss/keychars/mtk-kpd.kcm:system/usr/keychars/mtk-kpd.kcm
+
 # ---- Permisos de hardware ----
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \

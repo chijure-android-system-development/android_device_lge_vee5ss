@@ -60,13 +60,14 @@ on boot
     insmod /system/lib/modules/vcodec_kernel_driver.ko
     insmod /system/lib/modules/sec.ko
     insmod /system/lib/modules/devinfo.ko
+    # Combo chip stack (MT6628): hif_sdio → wmt → uart/gps/bt/wifi transports
+    # wlan.ko is loaded by the WiFi HAL in user-space when WiFi is enabled
     insmod /system/lib/modules/mtk_hif_sdio.ko
     insmod /system/lib/modules/mtk_stp_wmt.ko
     insmod /system/lib/modules/mtk_stp_uart.ko
     insmod /system/lib/modules/mtk_stp_gps.ko
     insmod /system/lib/modules/mtk_stp_bt.ko
     insmod /system/lib/modules/mtk_wmt_wifi.ko
-    insmod /system/lib/modules/wlan.ko
 
     # Camera / MHAL / MDP nodes. M4U registers in /proc/devices but does not
     # always emit a uevent on this stock kernel, so create it explicitly.

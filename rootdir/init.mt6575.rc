@@ -158,9 +158,13 @@ on boot
     chown system system /sys/class/leds/R/brightness
     chown system system /sys/class/leds/G/brightness
     chown system system /sys/class/leds/B/brightness
+    chown system system /sys/bus/i2c/drivers/lp5521/1-0032/led_blink
+    chown system system /sys/bus/i2c/drivers/lp5521/1-0032/led_pattern
     chmod 0660 /sys/class/leds/R/brightness
     chmod 0660 /sys/class/leds/G/brightness
     chmod 0660 /sys/class/leds/B/brightness
+    chmod 0660 /sys/bus/i2c/drivers/lp5521/1-0032/led_blink
+    chmod 0660 /sys/bus/i2c/drivers/lp5521/1-0032/led_pattern
 
     # MTK ALPS sensor hub — sensors.mt6575.so solo usa /dev/hwmsensor
     chown system system /dev/hwmsensor

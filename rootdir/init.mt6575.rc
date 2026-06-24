@@ -69,9 +69,8 @@ on boot
     insmod /system/lib/modules/mtk_stp_bt.ko
     insmod /system/lib/modules/mtk_wmt_wifi.ko
 
-    # Camera / MHAL / MDP nodes. M4U registers in /proc/devices but does not
-    # always emit a uevent on this stock kernel, so create it explicitly.
-    mknod /dev/M4U_device c 188 0
+    # Camera / MHAL / MDP nodes. /dev/M4U_device is created by
+    # /system/etc/init.d/10mtk-nodes because this Android init has no mknod.
     chown system camera /dev/kd_camera_hw
     chown system camera /dev/FM50AF
     chown system camera /dev/kd_camera_flashlight
@@ -97,18 +96,7 @@ on boot
     chmod 0444 /dev/mtk_jpeg
     chmod 0660 /dev/M4U_device
 
-    # CCCI modem device nodes
-    mknod /dev/ccci_fs c 178 0
-    mknod /dev/ccci_rpc c 178 1
-    mknod /dev/ccci_sys_rx c 184 2
-    mknod /dev/ccci_sys_tx c 184 3
-    mknod /dev/ccci_pcm_rx c 184 4
-    mknod /dev/ccci_pcm_tx c 184 5
-    mknod /dev/ccci_ipc_1220_0 c 183 0
-    mknod /dev/ccci_uem_rx c 184 18
-    mknod /dev/ccci_uem_tx c 184 19
-    mknod /dev/ccci_md_log_rx c 184 42
-    mknod /dev/ccci_md_log_tx c 184 43
+    # CCCI modem device nodes are created by /system/etc/init.d/10mtk-nodes.
     chmod 0660 /dev/ccci_fs
     chmod 0660 /dev/ccci_rpc
     chmod 0660 /dev/ccci_sys_rx
@@ -178,8 +166,8 @@ on boot
     chmod 0660 /dev/nvram
     chown root nvram /dev/nvram
 
-    # libmtk_drvb.so requires /dev/devmap for DRM/integrity checks
-    mknod /dev/devmap c 196 0
+    # libmtk_drvb.so requires /dev/devmap for DRM/integrity checks.
+    # The node is created by /system/etc/init.d/10mtk-nodes.
     chmod 0666 /dev/devmap
 
     # nvram_daemon exits without setting nvram_init=Ready on this port because
@@ -236,15 +224,6 @@ service nvram_daemon /system/bin/nvram_daemon
     user root
     group nvram system
     oneshot
-
-service media /system/bin/mediaserver
-    class main
-    socket soc_vt_tcv dgram 660 media system
-    socket soc_vt_stk dgram 660 media system
-    socket soc_vt_svc dgram 660 media system
-    user root
-    group audio camera graphics inet net_bt net_bt_admin net_bw_acct drmrpc media sdcard_rw nvram ccci radio
-    ioprio rt 4
 
 # sdcard daemon — emula FAT en /data/media via FUSE, monta en /storage/sdcard0
 service sdcard /system/bin/sdcard /data/media 1023 1023

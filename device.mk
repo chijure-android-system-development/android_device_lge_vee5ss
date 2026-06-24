@@ -23,12 +23,14 @@ PRODUCT_AAPT_PREF_CONFIG := hdpi
 
 # ---- Init y ramdisk ----
 PRODUCT_COPY_FILES += \
+    device/lge/vee5ss/rootdir/init.rc:root/init.rc \
     device/lge/vee5ss/rootdir/fstab.mt6575:root/fstab.mt6575 \
     device/lge/vee5ss/rootdir/init.mt6575.rc:root/init.mt6575.rc \
     device/lge/vee5ss/rootdir/init.mt6575.usb.rc:root/init.mt6575.usb.rc \
     device/lge/vee5ss/rootdir/ueventd.mt6575.rc:root/ueventd.mt6575.rc \
     system/core/rootdir/init.usb.rc:root/init.usb.rc \
     system/core/rootdir/init.trace.rc:root/init.trace.rc \
+    device/lge/vee5ss/init.d/10mtk-nodes:system/etc/init.d/10mtk-nodes \
     device/lge/vee5ss/vold.fstab:system/etc/vold.fstab \
     device/lge/vee5ss/audio_policy.conf:system/etc/audio_policy.conf
 

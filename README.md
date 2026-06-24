@@ -728,8 +728,9 @@ make bootimage
 Flashear en el dispositivo:
 
 ```bash
+adb reboot recovery
 adb push out/target/product/vee5ss/boot.img /cache/boot.img
-adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=4096; sync"
+adb shell "dd if=/cache/boot.img of=/dev/block/mmcblk0 bs=512 seek=36864; sync"
 adb reboot
 ```
 
@@ -740,9 +741,12 @@ adb shell md5sum /init.mt6575.rc /ueventd.mt6575.rc
 adb shell ls -l /dev/pvrsrvkm
 ```
 
-No usar `dd` directo a `/dev/block/mmcblk0 bs=512 seek=36864` como metodo
-principal. En este dispositivo ese comando no actualizo el ramdisk que termino
-arrancando; el metodo verificado es escribir al nodo MTK `/dev/bootimg`.
+No usar `/dev/bootimg` desde Android normal para validar cambios de ramdisk. En
+las pruebas de camara, `dd if=/cache/boot.img of=/dev/bootimg bs=4096` reporto
+exito, pero el readback y el siguiente boot conservaron el ramdisk anterior.
+
+El metodo persistente verificado fue flashear desde TWRP con el offset raw de
+`/proc/dumchar_info`: `/dev/block/mmcblk0`, `bs=512`, `seek=36864`.
 
 ---
 
@@ -831,7 +835,8 @@ reporta camaras fantasma y `CameraService` termina rechazando `cameraId 0`.
 El driver stock tambien requiere:
 
 - `/dev/mt-mdp` y `/dev/M4U_device` accesibles por el grupo `camera`.
-- `M4U_device` creado manualmente con major 188 cuando el kernel no emite uevent.
+- `M4U_device` creado por `/system/etc/init.d/10mtk-nodes`; este init no soporta
+  `mknod` en rc.
 - `mediaserver` corriendo como root; con uid `media`, `IspDrv` falla con
   `errno(13): Permission denied` al inicializar la camara.
 
@@ -902,7 +907,7 @@ Procedimiento usado durante el port:
 adb push out/target/product/vee5ss/cm-10-*-UNOFFICIAL-vee5ss.zip /cache/OTA.zip
 adb shell twrp install /cache/OTA.zip
 adb push out/target/product/vee5ss/boot.img /cache/boot.img
-adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=4096; sync"
+adb shell "dd if=/cache/boot.img of=/dev/block/mmcblk0 bs=512 seek=36864; sync"
 adb reboot
 ```
 

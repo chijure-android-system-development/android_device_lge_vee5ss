@@ -1,0 +1,44 @@
+#!/system/bin/sh
+
+create_node() {
+    path="$1"
+    major="$2"
+    minor="$3"
+
+    if [ ! -e "$path" ]; then
+        /system/xbin/mknod "$path" c "$major" "$minor"
+    fi
+}
+
+create_node /dev/M4U_device 188 0
+chown 1000.1006 /dev/M4U_device
+chmod 0660 /dev/M4U_device
+
+create_node /dev/ccci_fs 178 0
+create_node /dev/ccci_rpc 178 1
+create_node /dev/ccci_sys_rx 184 2
+create_node /dev/ccci_sys_tx 184 3
+create_node /dev/ccci_pcm_rx 184 4
+create_node /dev/ccci_pcm_tx 184 5
+create_node /dev/ccci_ipc_1220_0 183 0
+create_node /dev/ccci_uem_rx 184 18
+create_node /dev/ccci_uem_tx 184 19
+create_node /dev/ccci_md_log_rx 184 42
+create_node /dev/ccci_md_log_tx 184 43
+
+chown 1001.1001 /dev/ccci_fs /dev/ccci_rpc \
+    /dev/ccci_sys_rx /dev/ccci_sys_tx \
+    /dev/ccci_pcm_rx /dev/ccci_pcm_tx \
+    /dev/ccci_ipc_1220_0 \
+    /dev/ccci_uem_rx /dev/ccci_uem_tx \
+    /dev/ccci_md_log_rx /dev/ccci_md_log_tx
+
+chmod 0660 /dev/ccci_fs /dev/ccci_rpc \
+    /dev/ccci_sys_rx /dev/ccci_sys_tx \
+    /dev/ccci_pcm_rx /dev/ccci_pcm_tx \
+    /dev/ccci_ipc_1220_0 \
+    /dev/ccci_uem_rx /dev/ccci_uem_tx \
+    /dev/ccci_md_log_rx /dev/ccci_md_log_tx
+
+create_node /dev/devmap 196 0
+chmod 0666 /dev/devmap

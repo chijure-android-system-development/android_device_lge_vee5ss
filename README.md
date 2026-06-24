@@ -818,6 +818,31 @@ La imagen debe usar el `libaudioflinger.so` compilado por CM10. Los blobs MTK de
 audio pueden permanecer como HAL/librerias auxiliares, pero no deben reemplazar
 servicios core de frameworks.
 
+### Camara MTK
+
+`ro.hardware=mt6575` hace que Android cargue `/system/lib/hw/camera.mt6575.so`.
+Por eso el wrapper local debe instalarse como `camera.mt6575`, no como
+`camera.default`; el blob stock queda renombrado como
+`camera.stock.mt6575.so` y el wrapper lo carga con `dlopen()`.
+
+El wrapper limita el HAL stock a la camara trasera fisica. Sin esto, el blob MTK
+reporta camaras fantasma y `CameraService` termina rechazando `cameraId 0`.
+
+El driver stock tambien requiere:
+
+- `/dev/mt-mdp` y `/dev/M4U_device` accesibles por el grupo `camera`.
+- `M4U_device` creado manualmente con major 188 cuando el kernel no emite uevent.
+- `mediaserver` corriendo como root; con uid `media`, `IspDrv` falla con
+  `errno(13): Permission denied` al inicializar la camara.
+
+Validacion esperada en logcat:
+
+```
+vee5ss-camera: stock HAL reports 3 cameras; exposing only rear camera
+CameraService: Opening camera 0
+mHalCamPreviewProc ... frameCnt
+```
+
 ---
 
 ## Boot image MTK

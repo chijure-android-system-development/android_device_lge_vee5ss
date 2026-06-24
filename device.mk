@@ -73,7 +73,7 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 # ---- Paquetes ----
 PRODUCT_PACKAGES += \
     audio.primary.mt6575 \
-    camera.default \
+    camera.mt6575 \
     lights.mt6575 \
     power.mt6575 \
     rild \

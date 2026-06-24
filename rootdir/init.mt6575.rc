@@ -80,9 +80,9 @@ on boot
     chown system camera /dev/camera-isp
     chown system camera /dev/camera-eis
     chown system camera /dev/camera-fdvt
-    chown system media /dev/mt-mdp
+    chown system camera /dev/mt-mdp
     chown system camera /dev/mtk_jpeg
-    chown system media /dev/M4U_device
+    chown system camera /dev/M4U_device
     chown root media /proc/clkmgr/mipi_test
     chown system media /sys/bus/platform/drivers/mem_bw_ctrl/concurrency_scenario
     chmod 0660 /dev/kd_camera_hw
@@ -95,7 +95,7 @@ on boot
     chmod 0660 /dev/camera-fdvt
     chmod 0660 /dev/mt-mdp
     chmod 0444 /dev/mtk_jpeg
-    chmod 0444 /dev/M4U_device
+    chmod 0660 /dev/M4U_device
 
     # CCCI modem device nodes
     mknod /dev/ccci_fs c 178 0

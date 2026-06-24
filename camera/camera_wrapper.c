@@ -16,7 +16,7 @@
 #include <hardware/camera.h>
 #include <hardware/hardware.h>
 
-static const char kStockCameraHal[] = "/system/lib/hw/camera.mt6575.so";
+static const char kStockCameraHal[] = "/system/lib/hw/camera.stock.mt6575.so";
 
 static void *g_stock_handle;
 static camera_module_t *g_stock_module;

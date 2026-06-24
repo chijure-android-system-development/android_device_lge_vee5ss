@@ -29,9 +29,9 @@
 /dev/camera-isp           0660   system     camera
 /dev/camera-eis           0660   system     camera
 /dev/camera-fdvt          0660   system     camera
-/dev/mt-mdp               0660   system     media
+/dev/mt-mdp               0660   system     camera
 /dev/mtk_jpeg             0444   system     camera
-/dev/M4U_device           0444   system     media
+/dev/M4U_device           0660   system     camera
 
 # Audio
 /dev/eac                  0660   system     audio

@@ -78,5 +78,4 @@ PRODUCT_PACKAGES += \
     power.mt6575 \
     rild \
     libril \
-    libbessound_mtk \
     nvram_audio_init

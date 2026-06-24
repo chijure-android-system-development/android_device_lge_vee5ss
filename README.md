@@ -797,6 +797,27 @@ Blobs criticos declarados por `vee5ss-vendor-blobs.mk`:
 - NVRAM/LG: `libnvram.so`, `libcustom_nvram.so`,
   `libnvram_daemon_callback.so`, `liblgpart.so`, `liblgpclient_jni.so`
 
+### AudioFlinger y blobs MTK
+
+No instalar `libbessound_mtk` desde `PRODUCT_PACKAGES`. El stub se usaba para
+neutralizar BeSSound, pero mantenerlo en la imagen no es necesario para boot y
+complica el diagnostico de audio.
+
+Tampoco volver a copiar el blob propietario `libaudioflinger.so` a
+`/system/lib/libaudioflinger.so` desde vendor. Ese override reemplaza la
+implementacion de CM10 y provoca bootloop temprano en `mediaserver` al registrar
+`media.audio_flinger`:
+
+```
+Fatal signal 7 (SIGBUS) in mediaserver
+AudioFlinger::instantiate()
+ServiceManager::addService("media.audio_flinger")
+```
+
+La imagen debe usar el `libaudioflinger.so` compilado por CM10. Los blobs MTK de
+audio pueden permanecer como HAL/librerias auxiliares, pero no deben reemplazar
+servicios core de frameworks.
+
 ---
 
 ## Boot image MTK

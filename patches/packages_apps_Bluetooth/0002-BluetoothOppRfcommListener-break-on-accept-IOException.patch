@@ -1,0 +1,13 @@
+diff --git a/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java b/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java
+index 9d9fa18..86b98dd 100644
+--- a/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java
++++ b/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java
+@@ -163,6 +163,8 @@ public class BluetoothOppRfcommListener {
+                                 msg.sendToTarget();
+                             } catch (IOException e) {
+                                 Log.e(TAG, "Error accept connection " + e);
++                                mInterrupted = true;
++                                break;
+                             }
+                         }
+                         Log.i(TAG, "BluetoothSocket listen thread finished");

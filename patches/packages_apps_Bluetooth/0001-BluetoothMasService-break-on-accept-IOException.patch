@@ -1,0 +1,15 @@
+diff --git a/src/com/android/bluetooth/map/BluetoothMasService.java b/src/com/android/bluetooth/map/BluetoothMasService.java
+index 863e056..c312df4 100644
+--- a/src/com/android/bluetooth/map/BluetoothMasService.java
++++ b/src/com/android/bluetooth/map/BluetoothMasService.java
+@@ -875,8 +875,8 @@ public class BluetoothMasService extends Service {
+                         if (stopped) {
+                             break;
+                         }
+-                        if (VERBOSE)
+-                            Log.v(TAG, "Accept exception: " + ex.toString());
++                        Log.e(TAG, "Accept exception: " + ex.toString());
++                        break;
+                     }
+                 }
+             }

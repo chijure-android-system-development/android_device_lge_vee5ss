@@ -47,4 +47,8 @@ apply_patch "packages/apps/Bluetooth" \
     "$DEVICE_DIR/patches/packages_apps_Bluetooth/0002-BluetoothOppRfcommListener-break-on-accept-IOException.patch" \
     "BluetoothOppRfcommListener: break on accept() IOException (previene spin loop)"
 
+apply_patch "frameworks/base" \
+    "$DEVICE_DIR/patches/frameworks_base/0002-UsbDeviceManager-skip-RNDIS-ethaddr-if-no-f_rndis.patch" \
+    "UsbDeviceManager: skip RNDIS ethaddr write if f_rndis sysfs node absent"
+
 echo "=== listo ==="

@@ -58,8 +58,14 @@ lib/libbluetoothdrv.so
 # etc/bluetooth/*.conf — instalados por el build de CM10 vía generic_no_telephony.mk
 
 # ---- WiFi (MT6620 combo) ----
+bin/6620_launcher
+bin/hald
+bin/stp_dump3
+bin/wpa_supplicant
 etc/wifi/wpa_supplicant.conf
 etc/wifi/p2p_supplicant.conf
+lib/libhardware_legacy.so
+lib/libwpa_client.so
 
 # ---- Lights / Power ----
 lib/hw/lights.default.so
@@ -94,6 +100,8 @@ lib/modules/mtk_stp_gps.ko
 lib/modules/mtk_stp_gps_mt6628.ko
 lib/modules/mtk_stp_uart.ko
 lib/modules/mtk_stp_uart_mt6628.ko
+lib/modules/mtk_fm_drv.ko
+lib/modules/mtk_fm_priv.ko
 lib/modules/mtk_wmt_wifi.ko
 lib/modules/mtk_wmt_wifi_mt6628.ko
 lib/modules/wlan.ko

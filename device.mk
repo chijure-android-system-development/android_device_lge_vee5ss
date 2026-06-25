@@ -46,6 +46,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
     frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
     frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
+    frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
     frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
     frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
@@ -62,6 +63,20 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240 \
     ro.opengles.version=131072 \
     wifi.interface=wlan0 \
+    wifi.tethering.interface=ap0 \
+    wifi.direct.interface=p2p0 \
+    wifi.supplicant_scan_interval=20 \
+    ro.mediatek.wlan.wsc=1 \
+    ro.mediatek.wlan.p2p=1 \
+    mediatek.wlan.ctia=0 \
+    mediatek.wlan.chip=MT6620 \
+    mediatek.wlan.module.postfix=_mt6620 \
+    wlan.chip.vendor=mtk \
+    wlan.chip.version=mt6620 \
+    wifi.lge.patch=true \
+    wlan.lge.concurrency=SCC \
+    wlan.lge.supportsimaka=YES \
+    gps.solution.combo.chip=1 \
     rild.libpath=/system/lib/mtk-ril.so \
     telephony.lteOnGsmDevice=0 \
     ro.com.android.dataroaming=false \

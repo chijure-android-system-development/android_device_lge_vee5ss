@@ -18,7 +18,7 @@
 /dev/ttyGS0               0660   root       usb
 /dev/ttyMT0               0660   root       root
 /dev/ttyMT1               0660   root       root
-/dev/ttyMT2               0660   bluetooth  bluetooth
+/dev/ttyMT2               0660   system     system
 
 # Camara / MHAL / MDP
 /dev/kd_camera_hw         0660   system     camera
@@ -65,5 +65,6 @@
 # BT / WiFi (MT6620 combo chip)
 /dev/stpbt                0660   bluetooth  bluetooth
 /dev/stpwmt               0660   system     system
+/dev/wmtWifi              0660   system     system
 /dev/wmtdetect            0660   system     system
 /dev/wmt_dbg              0660   system     system

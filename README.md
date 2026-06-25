@@ -52,7 +52,7 @@ Flasheo directo del boot en este equipo:
 
 ```bash
 adb push out/target/product/vee5ss/boot.img /cache/boot.img
-adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=4096; sync"
+adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=512; sync"
 adb reboot
 ```
 
@@ -730,7 +730,7 @@ Flashear en el dispositivo:
 ```bash
 adb reboot recovery
 adb push out/target/product/vee5ss/boot.img /cache/boot.img
-adb shell "dd if=/cache/boot.img of=/dev/block/mmcblk0 bs=512 seek=36864; sync"
+adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=512; sync"
 adb reboot
 ```
 
@@ -907,7 +907,7 @@ Procedimiento usado durante el port:
 adb push out/target/product/vee5ss/cm-10-*-UNOFFICIAL-vee5ss.zip /cache/OTA.zip
 adb shell twrp install /cache/OTA.zip
 adb push out/target/product/vee5ss/boot.img /cache/boot.img
-adb shell "dd if=/cache/boot.img of=/dev/block/mmcblk0 bs=512 seek=36864; sync"
+adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=512; sync;"
 adb reboot
 ```
 

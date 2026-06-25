@@ -14,6 +14,18 @@ create_node /dev/M4U_device 188 0
 chown 1000.1006 /dev/M4U_device
 chmod 0660 /dev/M4U_device
 
+create_node /dev/stpwmt 190 0
+create_node /dev/stpgps 191 0
+create_node /dev/stpbt 192 0
+create_node /dev/wmtWifi 153 0
+
+chown 1000.1000 /dev/stpwmt
+chown 1021.1021 /dev/stpgps
+chown 1002.1001 /dev/stpbt
+chown 1000.1000 /dev/wmtWifi
+
+chmod 0660 /dev/stpwmt /dev/stpgps /dev/stpbt /dev/wmtWifi
+
 create_node /dev/ccci_fs 178 0
 create_node /dev/ccci_rpc 178 1
 create_node /dev/ccci_sys_rx 184 2

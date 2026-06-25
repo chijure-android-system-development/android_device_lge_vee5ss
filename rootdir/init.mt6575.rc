@@ -248,7 +248,7 @@ service nvram_daemon /system/bin/nvram_daemon
     oneshot
     disabled
 
-on property:init.svc.lgpservicestub=running
+on property:lgpservice.ready=1
     start nvram_daemon
 
 service hald /system/bin/hald

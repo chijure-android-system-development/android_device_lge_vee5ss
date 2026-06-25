@@ -485,7 +485,7 @@ service bluetoothd /system/bin/bluetoothd -n
     disabled
 
 service lgpservicestub /system/bin/lgpservicestub
-    class main
+    class core
     user root
     group root
 

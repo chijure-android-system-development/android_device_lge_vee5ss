@@ -62,6 +62,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240 \
     ro.opengles.version=131072 \
+    ro.bluetooth.PANenable=1 \
+    ro.btstack=blueangel \
     wifi.interface=wlan0 \
     wifi.tethering.interface=ap0 \
     wifi.direct.interface=p2p0 \
@@ -95,4 +97,5 @@ PRODUCT_PACKAGES += \
     power.mt6575 \
     rild \
     libril \
+    lgpservicestub \
     nvram_audio_init

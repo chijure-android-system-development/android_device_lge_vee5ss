@@ -25,6 +25,20 @@ TARGET_RELEASETOOLS_EXTENSIONS := device/lge/vee5ss
 
 TARGET_PROVIDES_INIT_RC := true
 
+# ---- WiFi / Bluetooth combo (MT6620) ----
+BOARD_WLAN_DEVICE           := MT6620
+WPA_SUPPLICANT_VERSION      := VER_0_8_X
+BOARD_WPA_SUPPLICANT_DRIVER := NL80211
+BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_mt66xx
+BOARD_HOSTAPD_DRIVER        := NL80211
+BOARD_HOSTAPD_PRIVATE_LIB   := lib_driver_cmd_mt66xx
+WIFI_DRIVER_MODULE_PATH     := /system/lib/modules/wlan.ko
+WIFI_DRIVER_MODULE_NAME     := wlan
+
+BOARD_HAVE_BLUETOOTH        := true
+BOARD_HAVE_BLUETOOTH_MTK    := true
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/lge/vee5ss/bluetooth
+
 # mtkbootimg: genera headers MTK antes del kernel y ramdisk
 BOARD_CUSTOM_BOOTIMG    := true
 BOARD_CUSTOM_MKBOOTIMG  := $(HOST_OUT_EXECUTABLES)/mtkbootimg$(HOST_EXECUTABLE_SUFFIX)

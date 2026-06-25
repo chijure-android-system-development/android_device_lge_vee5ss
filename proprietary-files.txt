@@ -49,12 +49,49 @@ lib/libagpssupl.so
 bin/mtk_agpsd
 
 # ---- Bluetooth (MT6620 combo) ----
+bin/btconfig
+bin/btlogmask
+bin/mtkbt
+app/MtkBt.apk
 lib/libbluetooth_mtk.so
+lib/libbluetooth_relayer.so
 lib/libbluetoothem_mtk.so
+lib/libbtsniff.so
 lib/libbtcust.so
 lib/libbtcusttable.so
 lib/libbtpcm.so
 lib/libbluetoothdrv.so
+lib/libem_bt_jni.so
+lib/libengbttest_jni.so
+lib/libextavrcp.so
+lib/libextavrcp_jni.so
+lib/libextbip.so
+lib/libextbip_jni.so
+lib/libextbpp.so
+lib/libextbpp_jni.so
+lib/libextdun_jni.so
+lib/libextsys.so
+lib/libextsys_jni.so
+lib/libextftp.so
+lib/libextftp_jni.so
+lib/libexthid.so
+lib/libexthid_jni.so
+lib/libextjsr82.so
+lib/libextmap.so
+lib/libextmap_jni.so
+lib/libextopp.so
+lib/libextopp_jni.so
+lib/libextpan_jni.so
+lib/libextpbap.so
+lib/libextpbap_jni.so
+lib/libextsimap.so
+lib/libextsimap_jni.so
+lib/libexttestmode.so
+lib/libmtkbtextadp.so
+lib/libmtkbtextadpa2dp.so
+lib/libmtkbtextpan.so
+lib/libmtkbtextspp.so
+lib/libpppbtdun.so
 # etc/bluetooth/*.conf — instalados por el build de CM10 vía generic_no_telephony.mk
 
 # ---- WiFi (MT6620 combo) ----

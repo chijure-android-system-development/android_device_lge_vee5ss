@@ -171,6 +171,28 @@ on post-fs-data
     mkdir /data/misc 01771 system misc
     mkdir /data/misc/bluetoothd 0770 bluetooth bluetooth
     mkdir /data/misc/bluetooth 0770 system system
+    mkdir /data/@btmtk 0770 bluetooth bluetooth
+    mkdir /data/@btmtk/devdb 0770 bluetooth bluetooth
+    mkdir /data/@btmtk/profile 0770 bluetooth bluetooth
+    mkdir /data/@btmtk/le 0770 bluetooth bluetooth
+    mkdir /data/nvram 0777 root bluetooth
+    mkdir /data/nvram/APCFG 0777 root bluetooth
+    mkdir /data/nvram/APCFG/APRDEB 0777 root bluetooth
+    mkdir /data/nvram/APCFG/APRDCL 0777 root bluetooth
+    copy /data/nvram/APCFG/APRDEB/BT_Addr /data/BT_Addr
+    chown root bluetooth /data/nvram
+    chown root bluetooth /data/nvram/APCFG
+    chown root bluetooth /data/nvram/APCFG/APRDEB
+    chown root bluetooth /data/nvram/APCFG/APRDCL
+    chown root bluetooth /data/nvram/APCFG/APRDEB/BT_Addr
+    chown root root /data/BT_Addr
+    chmod 0777 /data/nvram
+    chmod 0777 /data/nvram/APCFG
+    chmod 0777 /data/nvram/APCFG/APRDEB
+    chmod 0777 /data/nvram/APCFG/APRDCL
+    chmod 0666 /data/nvram/APCFG/APRDEB/BT_Addr
+    chmod 0666 /data/nvram/APCFG/APRDCL/FILE_VER
+    chmod 0777 /data/BT_Addr
     mkdir /data/misc/keystore 0700 keystore keystore
     mkdir /data/misc/keychain 0771 system system
     mkdir /data/misc/vpn 0770 system vpn
@@ -461,6 +483,22 @@ service bluetoothd /system/bin/bluetoothd -n
     # let bluetoothd drop uid to bluetooth with the right linux capabilities
     group bluetooth net_bt_admin misc
     disabled
+
+service lgpservicestub /system/bin/lgpservicestub
+    class main
+    user root
+    group root
+
+service mtkbt /system/bin/mtkbt
+    class main
+    socket bt.int.adp dgram 660 bluetooth net_bt
+    socket bt.a2dp.stream dgram 660 bluetooth net_bt
+    user bluetooth
+    group net_bt bluetooth net_bt_admin sdcard_rw inet net_admin nvram net_raw
+    disabled
+
+on property:sys.boot_completed=1
+    start mtkbt
 
 service installd /system/bin/installd
     class main

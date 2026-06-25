@@ -29,7 +29,7 @@ on fs
 
 on post-fs
     # NVRAM (calibración WiFi y BT) — montaje manual; vold no lo maneja
-    mkdir /data/nvram 0770 root nvram
+    mkdir /data/nvram 0777 root bluetooth
 
 on post-fs-data
     # MTP / USB media

@@ -48,22 +48,25 @@ Las particiones fueron verificadas desde `/proc/dumchar_info`. Los nodos como
 | `/nvram` | `/dev/nvram` | emmc | stock |
 | `/uboot` | `/dev/uboot` | emmc | stock |
 
-Flasheo directo del boot en este equipo:
+Flasheo persistente del boot en este equipo:
 
 ```bash
 adb push out/target/product/vee5ss/boot.img /cache/boot.img
-adb shell "dd if=/cache/boot.img of=/dev/bootimg bs=512; sync"
+adb reboot recovery
+adb wait-for-device
+adb shell "dd if=/cache/boot.img of=/dev/block/mmcblk0 bs=512 seek=36864; sync"
 adb reboot
 ```
 
 Aunque `/proc/dumchar_info` reporta `bootimg` en `mmcblk0` offset
-`0x1200000` (`bs=512 seek=36864`), durante la depuracion ese metodo no cambio
-el ramdisk que realmente arranco. El metodo fiable verificado fue escribir al
-nodo MTK `/dev/bootimg`.
+`0x1200000` (`bs=512 seek=36864`), escribir `/dev/bootimg` desde Android normal
+puede reportar exito y aun asi dejar arrancando el ramdisk anterior. Para cambios
+de ramdisk, el metodo fiable verificado fue reiniciar a recovery/TWRP y escribir
+el offset raw anterior.
 
 ---
 
-## Estado actual (2026-06-22)
+## Estado actual (2026-06-25)
 
 | Subsistema | Estado |
 | --- | --- |
@@ -85,7 +88,270 @@ nodo MTK `/dev/bootimg`.
 | Brillo LCD | ✅ `lights.default.so` + `libproxyhal.so` stock cargados |
 | LEDs notificación (RGB) | ✅ LP5521 R/G/B via HAL custom `lights.mt6575`, blink via thread |
 | Sensores (accel/mag/orient/prox) | ✅ `sensors.mt6575.so` via `/dev/hwmsensor`, permisos fijos en boot |
+| WiFi MT6620 | ✅ Funciona, persiste tras reboot |
+| Bluetooth MT6620 | ✅ Bring-up basico: `STATE_ON`, `mtkbt` vivo, servicios MTK ashmem registrados |
 | boot.img reconstruido | ✅ Flasheado con mtkbootimg |
+
+---
+
+## WiFi y Bluetooth MTK
+
+### WiFi MT6620
+
+WiFi esta funcional con el stack MTK/WMT del stock ROM. Validacion en vivo
+despues de reboot:
+
+```text
+getprop init.svc.6620_launcher -> running
+getprop wlan.driver.status -> ok
+/dev/ttyMT2 -> crw-rw---- system system 204,211
+init.svc.wpa_supplicant -> running
+wlan0 -> UP, LOWER_UP
+```
+
+Comando rapido de validacion:
+
+```bash
+adb wait-for-device
+adb shell 'getprop init.svc.6620_launcher; getprop wlan.driver.status; ls -l /dev/ttyMT2; svc wifi enable; sleep 10; getprop init.svc.wpa_supplicant; ip link show wlan0'
+```
+
+El WiFi necesita que el launcher WMT/STP este vivo y que los nodos MTK tengan
+permisos correctos. Los cambios del device tree y vendor para WiFi ya fueron
+commiteados antes de iniciar el trabajo de Bluetooth.
+
+### Bluetooth MT6620 / BlueAngel
+
+Estado actual: el bring-up basico ya llega a `STATE_ON` (`service call
+bluetooth 2` devuelve `0x0c`) y sobrevive un ciclo on/off sin reiniciar
+`system_server`, `com.android.phone` ni `com.mediatek.bluetooth`. El daemon
+propietario `/system/bin/mtkbt` permanece vivo y los servicios ashmem de los
+perfiles MTK quedan registrados. Falta validar flujos de usuario como
+discoverability, pairing, audio y transferencia.
+
+Lo que ya esta aplicado o importado:
+
+- JNI/framework MTK BlueAngel en `frameworks/base` y headers bajo
+  `mediatek/source/external/bluetooth/blueangel`.
+- Servicio `mtkbt` en `rootdir/init.rc` con sockets:
+  `/dev/socket/bt.int.adp` y `/dev/socket/bt.a2dp.stream`.
+- Directorios persistentes `/data/@btmtk/{devdb,profile,le}`.
+- Blobs BT/PAN/JSR82/EM desde stock ROM en `vendor/lge/vee5ss/proprietary`.
+- `liblgpclient_jni.so` reemplazado por el blob stock real; el stub anterior no
+  exportaba funciones usadas por BT.
+- Grupo completo de blobs `libext*.so` del stack BlueAngel stock agregado para
+  evitar crashes de `MtkBt.apk` por JNI faltante en FTP/HID/OPP/MAP/PBAP/etc.
+- `SystemServer` registra `bluetooth`, `bluetooth_socket` y
+  `bluetooth_profile_manager`.
+- El split `framework2` se usa para evitar el limite de metodos al sumar APIs MTK.
+- `btmtk_gap_local_uuid()` esta saltado temporalmente porque el `mtkbt` stock no
+  contiene los strings `MSG_ID_BT_BM_READ_LOCAL_UUID_REQ/CNF`; ese request no
+  parece estar soportado por el daemon del E450.
+- `lgpservicestub` registra `android.apps.ILGPService` para satisfacer
+  `liblgpclient_jni.so` durante `GORMcmd_HCC_Set_Local_BD_Addr`.
+- `servicemanager` permite registrar los servicios ashmem MTK que crea `mtkbt`
+  como UID bluetooth.
+- El `POWERON_CNF` de este blob devuelve `result=1` aunque el log del daemon dice
+  `mtk_bt_enable: BT is enabled success`; el JNI lo acepta como exito solo para
+  ese CNF.
+- `BluetoothEventLoop` ya no llama `cancelDiscovery()` cuando recibe
+  `Discovering=false`; esa llamada generaba un loop de eventos
+  `Discovering=false -> cancelDiscovery -> Discovering=false` que terminaba
+  saturando binder/GC y podia provocar watchdog.
+- `BluetoothHandsfree` tolera `mIncomingServerSocket == null` al apagar BT para
+  no matar `com.android.phone`.
+- `StorageManager.getDefaultPath()` y `Xlog.v()` se agregaron como APIs de
+  compatibilidad para el APK propietario `MtkBt.apk`.
+- `BluetoothAudioGateway` registra stubs JNI para los natives que declara la
+  clase Java pero no estaban en la tabla de `libandroid_runtime`; esto evita el
+  `UnsatisfiedLinkError` al apagar BT.
+
+Validacion de arranque del daemon:
+
+```bash
+adb wait-for-device
+adb shell 'getprop init.svc.mtkbt; ps | grep -E "mtkbt|com.mediatek.bluetooth"; ls -l /dev/socket/bt.int.adp /dev/socket/bt.a2dp.stream'
+```
+
+Estado bueno esperado para esta etapa:
+
+```text
+init.svc.mtkbt -> running
+/system/bin/mtkbt -> proceso vivo como usuario bluetooth
+com.mediatek.bluetooth -> proceso vivo
+/dev/socket/bt.int.adp -> srw-rw---- bluetooth net_bt
+/dev/socket/bt.a2dp.stream -> srw-rw---- bluetooth net_bt
+```
+
+Validacion actual:
+
+```text
+service call bluetooth 3 -> aceptado
+service call bluetooth 2 -> 0x0c
+init.svc.mtkbt -> running
+/system/bin/mtkbt -> proceso vivo como usuario bluetooth
+com.mediatek.bluetooth -> proceso vivo
+android.apps.ILGPService -> registrado
+mtk.bt.profile.{spp,opp,ftp,jsr82}*.ashm -> registrados
+```
+
+Validacion on/off usada despues de corregir el reinicio:
+
+```bash
+adb logcat -c
+adb shell 'service call bluetooth 3 >/dev/null; sleep 30; service call bluetooth 2; ps | grep -E "system_server|com.android.phone|com.mediatek.bluetooth|mtkbt"; service call bluetooth 4 >/dev/null; sleep 20; service call bluetooth 2; ps | grep -E "system_server|com.android.phone|com.mediatek.bluetooth|mtkbt"'
+adb logcat -d -v threadtime | grep -E 'FATAL EXCEPTION|Watchdog|ANR|UnsatisfiedLinkError|NoSuchMethodError|IncompatibleClassChangeError|cancelDiscovery'
+```
+
+Resultado esperado de esa validacion:
+
+```text
+BT ON  -> service call bluetooth 2 devuelve 0x0c
+BT OFF -> service call bluetooth 2 devuelve 0x0a
+system_server, com.android.phone, com.mediatek.bluetooth y mtkbt mantienen PID
+logcat no contiene FATAL/Watchdog/ANR/link errors ni spam de cancelDiscovery
+```
+
+Esta validacion fue repetida despues de flashear `boot.img` con el ramdisk nuevo:
+`lgpservicestub` arranco desde init, los permisos NVRAM quedaron aplicados desde
+`post-fs-data` y el encendido BT no requirio pasos ADB manuales.
+
+Log caracteristico del arranque funcional:
+
+```text
+BT_open: Read NVRAM : BD address 000046662001 Cap 0x60 Codec 0x00
+mtk_bt_enable: BT is enabled success
+MSG_ID_BT_POWERON_CNF: result=1
+Bluetooth state -> 0x0c
+```
+
+Hallazgos importantes:
+
+1. El modulo kernel `mtk_stp_bt.ko` busca la direccion BT en `/data/BT_Addr`.
+   No lee directamente `/data/nvram/APCFG/APRDEB/BT_Addr` para la ruta kernel.
+
+```text
+strings mtk_stp_bt.ko -> /data/BT_Addr
+```
+
+2. Sin `/data/BT_Addr`, el kernel abre BT con direccion vacia:
+
+```text
+[MTK-BT] nvram_read: failed to open!!
+[MTK-BT] BT_open: Read NVRAM : BD address 000000000000 Cap 0x00 Codec 0x00
+```
+
+3. La ruta validada en vivo fue copiar el archivo stock y dejarlo legible por el
+   proceso BT:
+
+```bash
+adb shell 'rm -f /data/BT_Addr; cp /data/nvram/APCFG/APRDEB/BT_Addr /data/BT_Addr; chown root:root /data/BT_Addr; chmod 0777 /data/BT_Addr'
+```
+
+Con eso el kernel ya lee una direccion real:
+
+```text
+[MTK-BT] BT_open: Read NVRAM : BD address 000046662001 Cap 0x60 Codec 0x00
+```
+
+4. Despues de corregir `/data/BT_Addr`, `mtkbt` deja de caer inmediatamente y
+   avanza hasta inicializar UART/HCI, pero necesita el servicio binder LG:
+
+```text
+D/MTKBT: UART_Init...
+D/[BT]: GORMcmd_HCC_Set_Local_BD_Addr
+I/ServiceManager: Waiting for service android.apps.ILGPService...
+W/bluetooth_common.cpp: timeout waiting response, in 15000 milliseconds
+E/BluetoothService.cpp: [GAP] btmtk_gap_power_on failed
+```
+
+5. `liblgpclient_jni.so` contiene el cliente binder para
+   `android.apps.ILGPService`. Las transacciones observadas por objdump son:
+
+| Metodo | Codigo |
+| --- | --- |
+| `lgp_init()` | `1` |
+| `lgp_bt_write()` | `108` / `0x6c` |
+| `lgp_bt_read()` | `109` / `0x6d` |
+| `lgp_fac_initialize()` | `152` / `0x98` |
+
+6. `LGSystemServer.apk` stock fue deodexado y revisado. Registra varios servicios
+   LG (`wifiLgeExtService`, `AAT`, `nfcLgService`, etc.), pero no aparece una
+   definicion directa de `android.apps.ILGPService`. El stub nativo minimo
+   desbloquea el arranque BT.
+
+7. `lgp_bt_read()` no devuelve un blob en el `Parcel`: el cliente stock hace dos
+   `readInt32()` y copia esos 8 bytes al buffer de salida. La respuesta correcta
+   para la direccion BT es empaquetar los 6 bytes de MAC en dos enteros y luego
+   devolver status `0`.
+
+8. `mtkbt` crea servicios ashmem como UID bluetooth. Sin whitelist en
+   `servicemanager`, aparecen errores como:
+
+```text
+add_service('mtk.bt.profile.spp.get.ashm', ...) uid=1002 - PERMISSION DENIED
+```
+
+Los nombres validados incluyen `spp.get`, `spp.put`, `opps`, `oppc`, `ftps` y
+`ftpc`; en el arranque exitoso tambien aparecen servicios `jsr82` numerados.
+
+Los skips de `set_local_name`, `set_scanable` y `local_uuid` siguen siendo
+diagnosticos. Antes de commitear Bluetooth hay que reemplazarlos por la
+correccion real o dejarlos claramente bajo un switch de debug.
+
+Comando de prueba usado para reproducir:
+
+```bash
+adb logcat -c
+adb shell 'service call bluetooth 2; service call bluetooth 3; sleep 45; service call bluetooth 2; getprop init.svc.mtkbt; ps | grep -E "mtkbt|com.mediatek.bluetooth"'
+timeout 8s adb logcat -d -v time > /tmp/vee5ss-bt.log || true
+grep -a -iE "ILGP|LGPService|MTKBT|BluetoothService|Fatal signal|wait uart|select failed|btmtk|send msg|POWERON|local_uuid|READ_LOCAL|failed" /tmp/vee5ss-bt.log
+```
+
+Build parcial para iterar `libandroid_runtime` sin compilar toda la ROM:
+
+```bash
+docker exec cm10-builder bash -lc 'cd /home/builder/cm10 && rm -rf out/target/product/vee5ss/obj/SHARED_LIBRARIES/libandroid_runtime_intermediates out/target/product/vee5ss/system/lib/libandroid_runtime.so && source build/envsetup.sh >/dev/null && lunch cm_vee5ss-eng >/dev/null && make libandroid_runtime'
+adb remount
+adb push out/target/product/vee5ss/system/lib/libandroid_runtime.so /system/lib/libandroid_runtime.so
+adb shell 'chmod 644 /system/lib/libandroid_runtime.so; sync'
+adb reboot
+```
+
+Build parcial del stub `android.apps.ILGPService`:
+
+```bash
+docker exec cm10-builder bash -lc 'cd /home/builder/cm10 && source build/envsetup.sh >/dev/null && lunch cm_vee5ss-eng >/dev/null && make lgpservicestub'
+adb remount
+adb push out/target/product/vee5ss/system/bin/lgpservicestub /system/bin/lgpservicestub
+adb shell 'chmod 755 /system/bin/lgpservicestub; /system/bin/lgpservicestub >/dev/null 2>&1 & sleep 1; service list | grep -i lgp'
+```
+
+Build parcial de `servicemanager`:
+
+```bash
+docker exec cm10-builder bash -lc 'cd /home/builder/cm10 && source build/envsetup.sh >/dev/null && lunch cm_vee5ss-eng >/dev/null && make servicemanager'
+adb remount
+adb push out/target/product/vee5ss/system/bin/servicemanager /system/bin/servicemanager
+adb shell 'chmod 755 /system/bin/servicemanager; sync'
+adb reboot
+```
+
+Lineas de investigacion pendientes:
+
+1. Limpiar los skips diagnosticos de `set_local_name`, `set_scanable` y
+   `local_uuid`, o dejarlos bajo un switch claro si el daemon stock realmente no
+   soporta alguno.
+2. Validar UI: activar/desactivar desde Settings, discoverability, pairing,
+   reconexion tras reboot y persistencia de `STATE_ON`.
+3. Validar perfiles: A2DP/HFP, OPP/FTP, PAN y JSR82 si aplica.
+4. Reducir permisos de `/data/nvram` si se encuentra el AID/GID stock correcto;
+   por ahora `0777` fue lo que permitio aislar y pasar el bring-up.
+5. Comparar logs de kernel STP/WMT alrededor del bring-up:
+
+```bash
+adb shell 'dmesg | grep -iE "bt|stp|wmt|mtk|ttyMT2|uart"'
+```
 
 ---
 

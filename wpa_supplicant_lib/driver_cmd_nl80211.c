@@ -141,6 +141,10 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 					  "Macaddr = " MACSTR "\n", MAC2STR(macaddr));
 	} else if (os_strcasecmp(cmd, "RELOAD") == 0) {
 		wpa_msg(drv->ctx, MSG_INFO, WPA_EVENT_DRIVER_STATE "HANGED");
+	} else if (os_strncasecmp(cmd, "SETSUSPENDMODE ", 15) == 0 ||
+		   os_strncasecmp(cmd, "SETSUSPENDOPTMODE ", 18) == 0) {
+		/* MT6620 driver does not implement suspend mode commands */
+		ret = 0;
 	} else if (os_strncasecmp(cmd, "POWERMODE ", 10) == 0) {
 		int state;
 		state = atoi(cmd + 10);

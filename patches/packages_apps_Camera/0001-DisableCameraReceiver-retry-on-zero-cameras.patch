@@ -1,0 +1,18 @@
+diff --git a/src/com/android/camera/DisableCameraReceiver.java b/src/com/android/camera/DisableCameraReceiver.java
+index 9418d653..114d3414 100644
+--- a/src/com/android/camera/DisableCameraReceiver.java
++++ b/src/com/android/camera/DisableCameraReceiver.java
+@@ -54,7 +54,12 @@ public class DisableCameraReceiver extends BroadcastReceiver {
+ 
+     private boolean hasCamera() {
+         int n = android.hardware.Camera.getNumberOfCameras();
+-        Log.i(TAG, "number of camera: " + n);
++        for (int attempt = 1; n == 0 && attempt < 3; attempt++) {
++            Log.i(TAG, "getNumberOfCameras returned 0, retrying (" + attempt + "/3)");
++            try { Thread.sleep(500); } catch (InterruptedException e) { break; }
++            n = android.hardware.Camera.getNumberOfCameras();
++        }
++        Log.i(TAG, "number of cameras: " + n);
+         return (n > 0);
+     }
+ 

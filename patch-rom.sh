@@ -51,4 +51,8 @@ apply_patch "frameworks/base" \
     "$DEVICE_DIR/patches/frameworks_base/0002-UsbDeviceManager-skip-RNDIS-ethaddr-if-no-f_rndis.patch" \
     "UsbDeviceManager: skip RNDIS ethaddr write if f_rndis sysfs node absent"
 
+apply_patch "packages/apps/Camera" \
+    "$DEVICE_DIR/patches/packages_apps_Camera/0001-DisableCameraReceiver-retry-on-zero-cameras.patch" \
+    "DisableCameraReceiver: retry getNumberOfCameras if HAL not ready at BOOT_COMPLETED"
+
 echo "=== listo ==="

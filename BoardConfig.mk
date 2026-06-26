@@ -65,6 +65,10 @@ TARGET_RECOVERY_PIXEL_FORMAT := "RGBA_8888"
 # ---- OTA assert ----
 TARGET_OTA_ASSERT_DEVICE := vee5ss,E450g,LG-E450g
 
+# ---- Camera ----
+# MT6575 uses Camera1 HAL (v1); use LegacyCamera sources in Gallery2
+BOARD_USES_LEGACY_CAMERA := true
+
 # ---- ADB root (útil durante el desarrollo del port) ----
 ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
 

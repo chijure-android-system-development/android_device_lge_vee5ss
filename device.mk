@@ -94,6 +94,7 @@ PRODUCT_PACKAGES += \
     audio.primary.mt6575 \
     libbessound_mtk \
     camera.mt6575 \
+    Gallery2 \
     lights.mt6575 \
     power.mt6575 \
     rild \

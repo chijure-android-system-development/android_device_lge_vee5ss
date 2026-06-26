@@ -1,0 +1,13 @@
+diff --git a/src/net/cactii/flash2/TorchService.java b/src/net/cactii/flash2/TorchService.java
+index c08affa..31ca34b 100644
+--- a/src/net/cactii/flash2/TorchService.java
++++ b/src/net/cactii/flash2/TorchService.java
+@@ -116,7 +116,7 @@ public class TorchService extends Service {
+         startForeground(getString(R.string.app_name).hashCode(), mNotification);
+         Settings.System.putInt(this.getContentResolver(), Settings.System.TORCH_STATE, 1);
+         this.sendBroadcast(new Intent(TorchSwitch.TORCH_STATE_CHANGED));
+-        return START_STICKY;
++        return START_NOT_STICKY;
+     }
+ 
+     public void onDestroy() {

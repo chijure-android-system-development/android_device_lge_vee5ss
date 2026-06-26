@@ -55,4 +55,8 @@ apply_patch "packages/apps/Camera" \
     "$DEVICE_DIR/patches/packages_apps_Camera/0001-DisableCameraReceiver-retry-on-zero-cameras.patch" \
     "DisableCameraReceiver: retry getNumberOfCameras if HAL not ready at BOOT_COMPLETED"
 
+apply_patch "packages/apps/Torch" \
+    "$DEVICE_DIR/patches/packages_apps_Torch/0001-TorchService-do-not-restart-after-stop.patch" \
+    "TorchService: do not restart after user stops flashlight"
+
 echo "=== listo ==="

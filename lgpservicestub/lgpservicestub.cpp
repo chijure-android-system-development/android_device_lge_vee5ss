@@ -3,7 +3,6 @@
 #include <binder/IServiceManager.h>
 #include <binder/Parcel.h>
 #include <binder/ProcessState.h>
-#include <cutils/properties.h>
 #include <utils/Log.h>
 #include <utils/String16.h>
 
@@ -108,7 +107,6 @@ int main(int, char**) {
         ALOGE("Failed to register android.apps.ILGPService: %d", ret);
         return 1;
     }
-    property_set("lgpservice.ready", "1");
     android::ProcessState::self()->startThreadPool();
     android::IPCThreadState::self()->joinThreadPool();
     return 0;

@@ -227,13 +227,11 @@ service ccci_rpcd /system/bin/ccci_rpcd
     class core
     user root
     group radio system
-    oneshot
 
 service ccci_fsd /system/bin/ccci_fsd
     class core
     user root
     group radio system
-    oneshot
 
 service ccci_mdinit /system/bin/ccci_mdinit
     class core

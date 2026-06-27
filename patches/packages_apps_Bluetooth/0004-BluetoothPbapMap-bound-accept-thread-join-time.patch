@@ -1,0 +1,81 @@
+diff --git a/src/com/android/bluetooth/map/BluetoothMasService.java b/src/com/android/bluetooth/map/BluetoothMasService.java
+index c312df4..55f05a0 100644
+--- a/src/com/android/bluetooth/map/BluetoothMasService.java
++++ b/src/com/android/bluetooth/map/BluetoothMasService.java
+@@ -74,6 +74,8 @@ public class BluetoothMasService extends Service {
+     public static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+     public static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
+ 
++    private static final long ACCEPT_THREAD_JOIN_TIMEOUT_MS = 1000;
++
+     /**
+      * Intent indicating incoming connection request which is sent to
+      * BluetoothMasActivity
+@@ -725,7 +727,10 @@ public class BluetoothMasService extends Service {
+             if (mAcceptThread != null) {
+                 try {
+                     mAcceptThread.shutdown();
+-                    mAcceptThread.join();
++                    mAcceptThread.join(ACCEPT_THREAD_JOIN_TIMEOUT_MS);
++                    if (mAcceptThread.isAlive()) {
++                        Log.w(TAG, "mAcceptThread still running after close timeout");
++                    }
+                 } catch (InterruptedException ex) {
+                     Log.w(TAG, "mAcceptThread  close error" + ex);
+                 } finally {
+@@ -887,7 +892,7 @@ public class BluetoothMasService extends Service {
+                         mServerSocket.close();
+                         mServerSocket = null;
+                     } catch (IOException e) {
+-                        Log.e(TAG, "Failed to close socket", e);
++                        Log.w(TAG, "Failed to close socket: " + e);
+                     }
+                 }
+             }
+diff --git a/src/com/android/bluetooth/pbap/BluetoothPbapService.java b/src/com/android/bluetooth/pbap/BluetoothPbapService.java
+index e7654a3..2530985 100644
+--- a/src/com/android/bluetooth/pbap/BluetoothPbapService.java
++++ b/src/com/android/bluetooth/pbap/BluetoothPbapService.java
+@@ -76,6 +76,8 @@ public class BluetoothPbapService extends Service {
+ 
+     public static final boolean VERBOSE = false;
+ 
++    private static final long ACCEPT_THREAD_JOIN_TIMEOUT_MS = 1000;
++
+     /**
+      * Intent indicating incoming obex authentication request which is from
+      * PCE(Carkit)
+@@ -390,16 +392,20 @@ public class BluetoothPbapService extends Service {
+         try {
+             closeSocket(true, true);
+         } catch (IOException ex) {
+-            Log.e(TAG, "CloseSocket error: " + ex);
++            Log.w(TAG, "CloseSocket error: " + ex);
+         }
+ 
+         if (mAcceptThread != null) {
+             try {
+                 mAcceptThread.shutdown();
+-                mAcceptThread.join();
+-                mAcceptThread = null;
++                mAcceptThread.join(ACCEPT_THREAD_JOIN_TIMEOUT_MS);
++                if (mAcceptThread.isAlive()) {
++                    Log.w(TAG, "mAcceptThread still running after close timeout");
++                }
+             } catch (InterruptedException ex) {
+                 Log.w(TAG, "mAcceptThread close error" + ex);
++            } finally {
++                mAcceptThread = null;
+             }
+         }
+         mServerSocket = null;
+@@ -563,7 +569,8 @@ public class BluetoothPbapService extends Service {
+                     if (stopped) {
+                         break;
+                     }
+-                    if (VERBOSE) Log.v(TAG, "Accept exception: " + ex.toString());
++                    Log.e(TAG, "Accept exception: " + ex.toString());
++                    break;
+                 }
+             }
+         }

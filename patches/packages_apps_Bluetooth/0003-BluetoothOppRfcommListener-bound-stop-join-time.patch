@@ -1,0 +1,40 @@
+diff --git a/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java b/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java
+index 86b98dd..fc07560 100644
+--- a/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java
++++ b/src/com/android/bluetooth/opp/BluetoothOppRfcommListener.java
+@@ -63,6 +63,8 @@ public class BluetoothOppRfcommListener {
+ 
+     private static final int DEFAULT_OPP_CHANNEL = 12;
+ 
++    private static final long ACCEPT_THREAD_JOIN_TIMEOUT_MS = 1000;
++
+     private final int mBtOppRfcommChannel;
+ 
+     private final BluetoothAdapter mAdapter;
+@@ -200,18 +202,22 @@ public class BluetoothOppRfcommListener {
+                     try {
+                         mBtServerSocket.close();
+                     } catch (IOException e) {
+-                        Log.e(TAG, "Error close mBtServerSocket");
++                        Log.w(TAG, "Error close mBtServerSocket: " + e);
+                     }
+                 }
+             }
+             try {
+                 mSocketAcceptThread.interrupt();
+                 if (V) Log.v(TAG, "waiting for thread to terminate");
+-                mSocketAcceptThread.join();
+-                mSocketAcceptThread = null;
+-                mCallback = null;
++                mSocketAcceptThread.join(ACCEPT_THREAD_JOIN_TIMEOUT_MS);
++                if (mSocketAcceptThread.isAlive()) {
++                    Log.w(TAG, "Accept Thread still running after stop timeout");
++                }
+             } catch (InterruptedException e) {
+                 if (V) Log.v(TAG, "Interrupted waiting for Accept Thread to join");
++            } finally {
++                mSocketAcceptThread = null;
++                mCallback = null;
+             }
+         }
+     }

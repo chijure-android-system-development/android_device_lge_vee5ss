@@ -1,0 +1,46 @@
+diff --git a/core/jni/android_server_BluetoothEventLoop.cpp b/core/jni/android_server_BluetoothEventLoop.cpp
+index d084e12..fc08035 100644
+--- a/core/jni/android_server_BluetoothEventLoop.cpp
++++ b/core/jni/android_server_BluetoothEventLoop.cpp
+@@ -641,6 +641,20 @@ void btmtk_host_cache_write(native_data_t *nat)
+     close(fd);
+ }
+ 
++static void btmtk_set_default_local_name(btmtk_host_cache_struct *host_cache)
++{
++    char model[PROPERTY_VALUE_MAX];
++
++    property_get("ro.product.model", model, BTMTK_ANDROID_DEFAULT_LOCAL_NAME);
++    if (!model[0]) {
++        strncpy(model, BTMTK_ANDROID_DEFAULT_LOCAL_NAME, sizeof(model));
++        model[sizeof(model) - 1] = '\0';
++    }
++
++    memset(host_cache->name, 0x0, BTBM_ADP_MAX_NAME_LEN);
++    strncpy(host_cache->name, model, BTBM_ADP_MAX_NAME_LEN - 1);
++}
++
+ 
+ /*****************************************************************************
+  * FUNCTION
+@@ -674,7 +688,7 @@ void btmtk_host_cache_init(native_data_t *nat)
+         if(!strcmp(op,"OP01")){	//CMCC Athens15 project
+           strncpy(nat->host_cache.name, "MTK Athens15", BTBM_ADP_MAX_NAME_LEN);
+         } else {
+-          strncpy(nat->host_cache.name, BTMTK_ANDROID_DEFAULT_LOCAL_NAME, BTBM_ADP_MAX_NAME_LEN);
++          btmtk_set_default_local_name(&nat->host_cache);
+         }
+         //nat->host_cache.scan_mode = BTBM_ADP_P_ON_I_ON;
+         btmtk_host_cache_write(nat);
+@@ -690,6 +704,11 @@ void btmtk_host_cache_init(native_data_t *nat)
+             LOGE("[GAP] btmtk_host_cache_init read error(%d bytes read) %d: %s", read_byte, errno, strerror(errno));
+         }
+         close(fd);
++
++        if (!strncmp(nat->host_cache.name, BTMTK_ANDROID_DEFAULT_LOCAL_NAME, BTBM_ADP_MAX_NAME_LEN)) {
++            btmtk_set_default_local_name(&nat->host_cache);
++            btmtk_host_cache_write(nat);
++        }
+     }
+ }
+ 

@@ -47,9 +47,21 @@ apply_patch "packages/apps/Bluetooth" \
     "$DEVICE_DIR/patches/packages_apps_Bluetooth/0002-BluetoothOppRfcommListener-break-on-accept-IOException.patch" \
     "BluetoothOppRfcommListener: break on accept() IOException (previene spin loop)"
 
+apply_patch "packages/apps/Bluetooth" \
+    "$DEVICE_DIR/patches/packages_apps_Bluetooth/0003-BluetoothOppRfcommListener-bound-stop-join-time.patch" \
+    "BluetoothOppRfcommListener: bound stop() join time (previene ANR al apagar BT)"
+
+apply_patch "packages/apps/Bluetooth" \
+    "$DEVICE_DIR/patches/packages_apps_Bluetooth/0004-BluetoothPbapMap-bound-accept-thread-join-time.patch" \
+    "Bluetooth PBAP/MAP: bound accept thread join time on shutdown"
+
 apply_patch "frameworks/base" \
     "$DEVICE_DIR/patches/frameworks_base/0002-UsbDeviceManager-skip-RNDIS-ethaddr-if-no-f_rndis.patch" \
     "UsbDeviceManager: skip RNDIS ethaddr write if f_rndis sysfs node absent"
+
+apply_patch "frameworks/base" \
+    "$DEVICE_DIR/patches/frameworks_base/0003-BluetoothService-use-product-model-local-name.patch" \
+    "BluetoothService: use ro.product.model as default MTK local name"
 
 apply_patch "packages/apps/Camera" \
     "$DEVICE_DIR/patches/packages_apps_Camera/0001-DisableCameraReceiver-retry-on-zero-cameras.patch" \

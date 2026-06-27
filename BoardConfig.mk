@@ -37,7 +37,6 @@ WIFI_DRIVER_MODULE_NAME     := wlan
 
 BOARD_HAVE_BLUETOOTH        := true
 BOARD_HAVE_BLUETOOTH_MTK    := true
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/lge/vee5ss/bluetooth
 
 # mtkbootimg: genera headers MTK antes del kernel y ramdisk
 BOARD_CUSTOM_BOOTIMG    := true

@@ -195,6 +195,11 @@ on boot
     # The node is created by /system/etc/init.d/10mtk-nodes.
     chmod 0666 /dev/devmap
 
+    # libmtk_devinfo.so reads /dev/devinfo for WiFi MAC and BT address.
+    # Node is created when devinfo.ko is insmod'd above.
+    chmod 0660 /dev/devinfo
+    chown system system /dev/devinfo
+
     # nvram_daemon exits without setting nvram_init=Ready on this port because
     # the raw /dev/nvram partition has no audio calibration records. Force-set
     # the property so libaudiocustparam.so uses existing /data/nvram/ files.
@@ -256,8 +261,15 @@ service nvram_daemon /system/bin/nvram_daemon
     oneshot
     disabled
 
+service nvram_agent_binder /system/bin/nvram_agent_binder
+    class main
+    user root
+    group nvram system
+    disabled
+
 on property:init.svc.lgpservicestub=running
     start nvram_daemon
+    start nvram_agent_binder
 
 service hald /system/bin/hald
     class main

@@ -62,6 +62,9 @@
 /dev/gps                  0660   gps        gps
 /dev/stpgps               0660   gps        gps
 
+# devinfo — leído por libmtk_devinfo.so para obtener WiFi MAC / BT addr
+/dev/devinfo              0660   system     system
+
 # BT / WiFi (MT6620 combo chip)
 /dev/stpbt                0660   bluetooth  bluetooth
 /dev/stpwmt               0660   system     system

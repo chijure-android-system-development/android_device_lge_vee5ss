@@ -92,8 +92,28 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 
 # ---- Paquetes ----
 PRODUCT_PACKAGES += \
-    audio.primary.mt6575 \
+    libacdk \
+    libagpssupl \
+    libaudiocompensationfilter \
+    libaudiocustparam \
+    libaudiosetting \
     libbessound_mtk \
+    libbluetooth_mtk \
+    libbluetoothdrv \
+    libbluetoothem_mtk \
+    libbtcust \
+    libbtcusttable \
+    libbtpcm \
+    libcamalgo \
+    libcameracustom \
+    libcameraprofile \
+    libcustom_nvram \
+    libextjsr82 \
+    libmtk_devinfo \
+    libmtk_drvb \
+    libmtkbtextadpa2dp \
+    libnvram \
+    libnvram_daemon_callback \
     camera.mt6575 \
     Gallery2 \
     Torch \
@@ -102,4 +122,6 @@ PRODUCT_PACKAGES += \
     rild \
     libril \
     lgpservicestub \
+    mtk_agpsd \
+    nvram_agent_binder \
     nvram_audio_init

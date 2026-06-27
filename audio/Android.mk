@@ -1,5 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 
+ifeq ($(BOARD_USE_VEE5SS_AUDIO_HAL),true)
+
 include $(CLEAR_VARS)
 
 LOCAL_MODULE        := audio.primary.mt6575
@@ -11,3 +13,5 @@ LOCAL_MODULE_TAGS   := optional
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
+
+endif

@@ -52,5 +52,14 @@ chmod 0660 /dev/ccci_fs /dev/ccci_rpc \
     /dev/ccci_uem_rx /dev/ccci_uem_tx \
     /dev/ccci_md_log_rx /dev/ccci_md_log_tx
 
+# ttyC* are cdev nodes (major 169), not TTY-framework devices — must be mknod'd explicitly.
+# gsm0710muxd opens /dev/ttyC0 to multiplex AT channels after ccci_mdinit completes handshake.
+create_node /dev/ttyC0 169 0
+create_node /dev/ttyC1 169 1
+create_node /dev/ttyC2 169 2
+
+chown 1001.1001 /dev/ttyC0 /dev/ttyC1 /dev/ttyC2
+chmod 0660 /dev/ttyC0 /dev/ttyC1 /dev/ttyC2
+
 create_node /dev/devmap 196 0
 chmod 0666 /dev/devmap

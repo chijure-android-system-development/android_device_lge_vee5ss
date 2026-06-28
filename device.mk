@@ -121,7 +121,6 @@ PRODUCT_PACKAGES += \
     power.mt6575 \
     rild \
     libril \
-    lgpservicestub \
     mtk_agpsd \
     nvram_agent_binder \
     nvram_audio_init

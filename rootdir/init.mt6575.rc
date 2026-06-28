@@ -28,10 +28,13 @@ on fs
     setprop ro.crypto.fuse_sdcard true
 
 on post-fs
-    # NVRAM (calibración WiFi y BT) — montaje manual; vold no lo maneja
-    mkdir /data/nvram 0777 root bluetooth
 
 on post-fs-data
+    # NVRAM dirs — must exist before nvram_daemon runs.
+    # Created here (not post-fs) because /data is not mounted in post-fs.
+    mkdir /data/nvram 0770 root system
+    mkdir /data/nvram/md 0770 root system
+
     # MTP / USB media
     mkdir /data/media 0770 media_rw media_rw
 
@@ -63,6 +66,7 @@ on boot
     insmod /system/lib/modules/pvrsrvkm.ko
     chmod 0666 /dev/pvrsrvkm
     insmod /system/lib/modules/mtklfb.ko
+    insmod /system/lib/modules/devinfo.ko
     insmod /system/lib/modules/mtk_drvb.ko
     insmod /system/lib/modules/ccci_plat.ko
     insmod /system/lib/modules/ccci.ko
@@ -70,7 +74,6 @@ on boot
     insmod /system/lib/modules/m4u.ko
     insmod /system/lib/modules/vcodec_kernel_driver.ko
     insmod /system/lib/modules/sec.ko
-    insmod /system/lib/modules/devinfo.ko
     # Combo chip stack (MT6620): hif_sdio -> wmt -> uart/gps/bt/wifi transports
     # wlan.ko is loaded by the WiFi HAL in user-space when WiFi is enabled
     insmod /system/lib/modules/mtk_hif_sdio.ko
@@ -141,7 +144,6 @@ on boot
     chown radio radio /dev/ttyC2
     chown radio radio /sys/class/BOOT/BOOT/boot/md
     mkdir /dev/radio 0770 radio radio
-    mkdir /data/nvram/md 0770 root root
 
     write /dev/kmsg "CMBOOT: boot - modules done, starting services\n"
 
@@ -178,7 +180,10 @@ on boot
 
     # Permisos de dispositivos MTK
     chmod 0660 /dev/nvram
-    chown root nvram /dev/nvram
+    chown root system /dev/nvram
+    # lgpserver reads IMEI/SIM-lock data from /dev/misc2 (LGE MISC2 partition).
+    chmod 0660 /dev/misc2
+    chown root system /dev/misc2
 
     # STP nodes for the MT6620 combo chip. The stock ramdisk creates these
     # explicitly before WiFi/BT/GPS userspace touches WMT.
@@ -200,10 +205,9 @@ on boot
     chmod 0660 /dev/devinfo
     chown system system /dev/devinfo
 
-    # nvram_daemon exits without setting nvram_init=Ready on this port because
-    # the raw /dev/nvram partition has no audio calibration records. Force-set
-    # the property so libaudiocustparam.so uses existing /data/nvram/ files.
-    setprop nvram_init Ready
+    # mtk-ril.so (Gemini) requires the AT channel device as its first argument.
+    # PRODUCT_PROPERTY_OVERRIDES can't handle spaces in values, so set here.
+    setprop rild.libargs "-d /dev/radio/pttycmd1"
 
     # Bluetooth
     chmod 0660 /dev/ttyMT2
@@ -245,28 +249,20 @@ service gsm0710muxd /system/bin/gsm0710muxd -s /dev/ttyC0 -f 512 -n 8 -m basic
     group radio system
     disabled
 
-service ril-daemon /system/bin/rild
-    class main
-    socket rild stream 660 root radio
-    socket rild-debug stream 660 radio system
-    user root
-    group radio cache inet misc audio sdcard_rw log
-
 service nvram_daemon /system/bin/nvram_daemon
-    class core
+    class main
     user root
-    group nvram system
+    group system
     oneshot
-    disabled
 
 service nvram_agent_binder /system/bin/nvram_agent_binder
     class main
     user root
-    group nvram system
+    group system
+    oneshot
     disabled
 
-on property:init.svc.lgpservicestub=running
-    start nvram_daemon
+on property:init.svc.lgpserver=running
     start nvram_agent_binder
 
 service hald /system/bin/hald

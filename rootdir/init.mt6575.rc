@@ -27,8 +27,6 @@ on fs
     write /dev/kmsg "CMBOOT: fs - after mount_all\n"
     setprop ro.crypto.fuse_sdcard true
 
-on post-fs
-
 on post-fs-data
     # NVRAM dirs — must exist before nvram_daemon runs.
     # Created here (not post-fs) because /data is not mounted in post-fs.

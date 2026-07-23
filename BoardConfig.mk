@@ -45,6 +45,17 @@ BOARD_USES_MMCUTILS := true
 BOARD_RECOVERY_SWIPE := true
 TARGET_RECOVERY_FSTAB := device/lge/vee5ss/ramdisk/recovery/twrp.fstab
 
+# /proc/cpuinfo's Serial field is all zeros on this MT6575, so TWRP's default
+# device_id (used for the backup folder name) comes out as "0000000000000000".
+# Use the product model instead (-> "LG-E450g"). In theory this should also
+# append cpuinfo's Hardware field (-> "LG-E450g_MT6575"), but
+# DataManager::get_device_id() in bootable/recovery/data.cpp opens
+# "proc_cpuinfo.txt" (a relative path, not "/proc/cpuinfo") for that field —
+# the fopen fails silently and the suffix never gets appended. Confirmed on
+# the sibling vee4ss device tree (2026-07-23): the final name is just
+# "LG-E440g", still clean — not worth patching TWRP's shared code for this.
+TW_USE_MODEL_HARDWARE_ID_FOR_DEVICE_ID := true
+
 # TWRP UI: pantalla 480x800 WVGA (lg4573ba_wvga, 32bpp framebuffer)
 TW_THEME := portrait_hdpi
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBA_8888"

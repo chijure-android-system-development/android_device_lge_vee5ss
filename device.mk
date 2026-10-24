@@ -122,6 +122,8 @@ PRODUCT_PACKAGES += \
     Gallery2 \
     Torch \
     lights.mt6575 \
+    audio.primary.mt6575 \
+    libmtk_symbols \
     power.mt6575 \
     rild \
     libril \

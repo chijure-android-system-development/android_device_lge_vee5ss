@@ -6,6 +6,8 @@ on early-init
 
 on init
     write /dev/kmsg "CMBOOT: init\n"
+    # Missing MTK symbols (xlog) for the vendor blobs, see libmtk_symbols
+    export LD_PRELOAD libmtk_symbols.so
     # Almacenamiento interno via sdcard FUSE daemon — monta en /storage/sdcard0
     mkdir /storage 0755 root root
     mkdir /storage/sdcard0 0775 system system

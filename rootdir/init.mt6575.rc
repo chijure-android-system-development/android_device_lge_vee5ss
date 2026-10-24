@@ -294,6 +294,23 @@ service hald /system/bin/hald
     user system
     group system radio mount wifi inet net_admin
 
+# GPS daemon, started on demand by gps.default.so (ctl.start mnld); it
+# spawns /system/xbin/libmnlp, the MTK navigation library process.
+service mnld /system/xbin/mnld
+    user system
+    group system nvram gps inet
+    socket mnld stream 660 system system
+    disabled
+
+# GPS power/state nodes, written by mnld. They only appear once the MT6620
+# is up, after "on boot", so they are handed to gps here.
+on property:sys.boot_completed=1
+    chown gps gps /sys/class/gpsdrv/gps/pwrctl
+    chown gps gps /sys/class/gpsdrv/gps/suspend
+    chown gps gps /sys/class/gpsdrv/gps/state
+    chown gps gps /sys/class/gpsdrv/gps/pwrsave
+    chown gps gps /sys/class/gpsdrv/gps/status
+
 service agpsd /system/bin/mtk_agpsd
     class main
     socket agpsd stream 660 system system

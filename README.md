@@ -24,8 +24,9 @@ running device.
 
 ## Notes
 
-- The prebuilt kernel was extracted from `CWM_6.0.4.4.img`.
-- The kernel already contains the 512-byte MTK `KERNEL` header.
+- `kernel` is the prebuilt kernel of the tested recovery image (md5
+  `0e0225c37f064fc4b63007b34353db7f`, no MTK header; the packed image adds it).
+  It replaced the kernel taken from `CWM_6.0.4.4.img`.
 - Recovery images are packed with the local `mtkbootimg` host tool.
 - `mtkbootimg --mtk 1` adds MTK headers only when missing, so the kernel header
   is not duplicated and the generated ramdisk gets a `RECOVERY` header.
@@ -48,10 +49,11 @@ held until TWRP loads.
 ## Build
 
 The Android 4.4 tree expects an old Java toolchain, so the known-good build path
-is the Docker builder container.
+is the Docker builder container, on the native Docker engine
+(`docker-compose.native.yml`, output in `/mnt/fuentes/twrp-4.4-out`).
 
 ```bash
-docker exec twrp-4.4-builder bash -lc '
+docker --context default exec twrp-4.4-builder bash -lc '
 cd /home/builder/twrp-4.4 &&
 source build/envsetup.sh &&
 lunch omni_vee5ss-eng &&

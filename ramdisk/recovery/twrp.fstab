@@ -11,8 +11,8 @@
 
 # Particiones MTK via dispositivos virtuales (backups importantes)
 /boot        emmc    /dev/bootimg            flags=display="Boot";backup=1
-/recovery    emmc    /dev/recovery           flags=display="Recovery";wipeingui
+/recovery    emmc    /dev/recovery           flags=display="Recovery";backup=1
 /nvram       emmc    /dev/nvram              flags=display="NVRAM";backup=1
 /logo        emmc    /dev/logo               flags=display="Logo";backup=1
 /uboot       emmc    /dev/uboot              flags=display="Uboot";backup=1
-/secro       emmc    /dev/sec_ro             flags=display="Sec_RO";subpartitionof=/nvram;backup=1
+/secro       emmc    /dev/sec_ro             flags=display="Sec_RO";backup=1

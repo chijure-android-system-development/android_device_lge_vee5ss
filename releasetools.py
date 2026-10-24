@@ -1,14 +1,12 @@
 # MT6575 (vee5ss) OTA release tools override.
 #
-# The standard WriteRawImage("/boot") generates:
-#   package_extract_file("boot.img", "/dev/bootimg")
-# but /dev/bootimg does not exist in TWRP on MT6575. The boot partition
-# lives at a raw offset on mmcblk0 (block 36864 = 0x1200000 bytes) with
-# no named partition node. The package_extract_file call fails silently
-# (no assert wrapper in the EMMC path), leaving the boot partition unchanged.
-#
-# FullOTA_InstallEnd runs after WriteRawImage and flashes boot.img via dd
-# to the correct raw offset, overriding whatever the standard line did.
+# The generic OTA code rebuilds boot.img from target_files with plain
+# mkbootimg, so the ramdisk lacks MediaTek's 512-byte "ROOTFS" header the
+# MT6575 bootloader needs. CM10 has no hook to replace that image, so
+# FullOTA_InstallEnd builds boot-mtk.img with mtkbootimg from the same
+# kernel and ramdisk, adds it to the package and flashes it with dd at the
+# boot partition's raw offset (block 36864 = 0x1200000 bytes on mmcblk0),
+# overriding whatever the standard boot.img line wrote.
 
 import os
 import subprocess
@@ -28,16 +26,16 @@ def _read_boot_arg(boot_dir, name):
         f.close()
 
 
-def ProcessBootImage(info, boot_img):
-    boot_dir = os.path.join(info.input_tmp, "BOOT")
+def _build_mtk_boot_image(input_tmp):
+    boot_dir = os.path.join(input_tmp, "BOOT")
     kernel = os.path.join(boot_dir, "kernel")
     ramdisk = os.path.join(boot_dir, "ramdisk.img")
 
     if not os.path.exists(kernel) or not os.path.exists(ramdisk):
-        return boot_img
+        raise common.ExternalError(
+            "target_files has no BOOT/kernel or BOOT/ramdisk.img")
 
-    out_dir = tempfile.mkdtemp()
-    out_name = os.path.join(out_dir, "boot.img")
+    out_name = os.path.join(tempfile.mkdtemp(), "boot-mtk.img")
 
     cmd = [
         "mtkbootimg",
@@ -65,15 +63,23 @@ def ProcessBootImage(info, boot_img):
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         raise common.ExternalError(
-            "mtkbootimg failed while rebuilding boot.img:\n%s%s" %
+            "mtkbootimg failed while building boot-mtk.img:\n%s%s" %
             (stdout, stderr))
 
-    return common.File.FromLocalFile(boot_img.name, out_name)
+    f = open(out_name, "rb")
+    try:
+        return f.read()
+    finally:
+        f.close()
 
 
 def FullOTA_InstallEnd(info):
-    info.script.AppendExtra('package_extract_file("boot.img", "/tmp/boot.img");')
+    data = _build_mtk_boot_image(info.input_tmp)
+    common.CheckSize(data, "boot.img", info.info_dict)
+    common.ZipWriteStr(info.output_zip, "boot-mtk.img", data)
+
+    info.script.AppendExtra('package_extract_file("boot-mtk.img", "/tmp/boot-mtk.img");')
     info.script.AppendExtra(
         'run_program("/sbin/sh", "-c",'
-        ' "dd if=/tmp/boot.img of=/dev/block/mmcblk0 bs=512 seek=36864");')
-    info.script.AppendExtra('delete("/tmp/boot.img");')
+        ' "dd if=/tmp/boot-mtk.img of=/dev/block/mmcblk0 bs=512 seek=36864");')
+    info.script.AppendExtra('delete("/tmp/boot-mtk.img");')

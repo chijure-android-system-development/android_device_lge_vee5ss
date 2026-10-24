@@ -498,10 +498,6 @@ service mtkbt /system/bin/mtkbt
     socket bt.a2dp.stream dgram 660 bluetooth net_bt
     user bluetooth
     group net_bt bluetooth net_bt_admin sdcard_rw inet net_admin nvram net_raw
-    disabled
-
-on property:sys.boot_completed=1
-    start mtkbt
 
 service installd /system/bin/installd
     class main

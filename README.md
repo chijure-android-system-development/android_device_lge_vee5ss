@@ -1275,3 +1275,13 @@ otros deben mantenerse como blobs stock.
 /home/chijure/e450-build/system_lib_modules_backup/      # modulos .ko stock
 /home/chijure/Documentos/ccci_extract/                   # binarios CCCI stock
 ```
+
+### Bluetooth: MtkBt en lugar de Bluetooth.apk
+
+Igual que la ROM stock, el build instala `MtkBt.apk` (OPP/PBAP/MAP/FTP/PAN/HID
+sobre BlueAngel) con `LOCAL_OVERRIDES_PACKAGES := Bluetooth`: el `Bluetooth.apk`
+de AOSP pide sockets RFCOMM servidor que BlueAngel no implementa (reintentos y
+ANR). `lge-compat/` aporta las clases de LG que MtkBt enlaza
+(`ConfigBuildFlags.CAPP_MDM = false`, `cappuccino.Mdm.getInstance() = null`) y
+va al final del `BOOTCLASSPATH` en `rootdir/init.rc`. Envío OPP al Pixel 2 XL
+verificado.

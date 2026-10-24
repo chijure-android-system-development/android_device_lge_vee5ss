@@ -131,3 +131,8 @@ PRODUCT_PACKAGES += \
     mtk_agpsd \
     nvram_agent_binder \
     nvram_audio_init
+
+# ---- Bluetooth: MtkBt.apk stock reemplaza a Bluetooth.apk (como en stock) ----
+PRODUCT_PACKAGES += \
+    MtkBt \
+    com.lge.compat

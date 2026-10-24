@@ -172,9 +172,32 @@ on boot
     chown system system /dev/hwmsensor
     chown system system /dev/gsensor
     chown system system /dev/msensor
+    chown system system /dev/als_ps
+    chown system system /sys/bus/platform/drivers/gsensor/cali
+    chown system system /sys/bus/platform/drivers/gsensor/fast_calibration_x
+    chown system system /sys/bus/platform/drivers/gsensor/fast_calibration_y
+    chown system system /sys/bus/platform/drivers/gsensor/fast_calibration_z
+    chown system system /sys/bus/platform/drivers/gsensor/eeprom_writing
+    chown system system /sys/bus/platform/drivers/gsensor/softreset
+    chown system system /sys/bus/platform/drivers/gsensor/bandwidth
+    chown system system /sys/bus/platform/drivers/gsensor/cpsbandwidth
+    chown system system /sys/bus/platform/drivers/gsensor/cpsdata
+    chown system system /sys/bus/platform/drivers/gsensor/cpsopmode
+    chown system system /sys/bus/platform/drivers/gsensor/cpsrange
+    chown system system /sys/bus/platform/drivers/msensor/daemon
+    chown system system /sys/bus/platform/drivers/msensor/daemon2
+    chown system system /sys/bus/platform/drivers/msensor/cpsdata
+    chown system system /sys/bus/platform/drivers/msensor/cpsopmode
+    chown system system /sys/bus/platform/drivers/msensor/cpsreptxy
+    chown system system /sys/bus/platform/drivers/msensor/cpsreptz
+    chown system system /sys/bus/platform/drivers/als_ps/cali
     chmod 0660 /dev/hwmsensor
     chmod 0660 /dev/gsensor
     chmod 0660 /dev/msensor
+    chmod 0660 /dev/als_ps
+    chmod 0660 /sys/bus/platform/drivers/msensor/daemon
+    chmod 0660 /sys/bus/platform/drivers/msensor/daemon2
+    chmod 0660 /sys/bus/platform/drivers/msensor/cpsopmode
 
     # Permisos de dispositivos MTK
     chmod 0660 /dev/nvram
@@ -303,6 +326,19 @@ service p2p_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant \
     class main
     socket wpa_wlan0 dgram 660 wifi wifi
     disabled
+    oneshot
+
+service msensord /system/bin/msensord
+    class main
+    user system
+    group system
+    disabled
+    oneshot
+
+service bmm050d /system/bin/bmm050d
+    class main
+    user system
+    group system
     oneshot
 
 service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant \

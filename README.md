@@ -610,14 +610,34 @@ E/SensorService: Error activating sensor 2 (Operation not permitted)
 E/SensorService: Error activating sensor 7 (Operation not permitted)
 ```
 
-**Causa:** `sensors.mt6575.so` usa exclusivamente `/dev/hwmsensor` como interfaz
+**Causa:** `sensors.mt6575.so` usa `/dev/hwmsensor` como interfaz principal
 del hub ALPS MT6575 (confirmado con `strings sensors.mt6575.so | grep /dev/`).
 El nodo existía pero tenía permisos `root:root 0600`. El SensorService corre
 dentro de system_server (uid=system, gid=system) y no podía abrirlo.
 
-Los nodos `/dev/gsensor` y `/dev/msensor` también tenían `0600 root:root`.
-La entrada en `ueventd.mt6575.rc` para `ALPS_IO` y `bma150` correspondía a
-versiones antiguas del HAL; el HAL actual solo usa `hwmsensor`.
+Stock JB 4.1.2 en LG-E450g (`vee5ss_sca_com_g`) expone:
+- handle 0: LGE Accelerometer Sensor, Bosch BMA255
+- handle 1: LGE Magnetic Sensor, Bosch BMM056/BMM050 daemon
+- handle 2: LGE Orientation Sensor, fusion accel + magnetic
+- handle 7: LGE Proximity Sensor, Avago via `als_ps`
+
+Nodos stock relevantes:
+```
+/dev/als_ps       0660 system system 10,42
+/dev/msensor      0660 system system 10,43
+/dev/gsensor      0660 system system 10,44
+/dev/hwmsensor    0660 system system 10,45
+```
+
+Ademas stock arranca `service bmm050d /system/bin/bmm050d` desde
+`/init.project.rc` (`user system`, `group system`, `class main`, `oneshot`) y
+da ownership `system:system` a los archivos de calibracion `gsensor`, `msensor`
+y `als_ps`. Sin `bmm050d`, la brujula/orientacion puede enumerarse pero no
+quedar funcional como en stock.
+
+`msensord` queda instalado pero `disabled`: en este kernel intenta abrir
+`/sys/bus/platform/drivers/msensor/daemon`, que no existe, y entra en bucle de
+reinicio. En stock `init.svc.msensord=stopped` y `init.svc.bmm050d=running`.
 
 **Fix — dos líneas en dos archivos del ramdisk:**
 
@@ -626,13 +646,18 @@ versiones antiguas del HAL; el HAL actual solo usa `hwmsensor`.
 /dev/hwmsensor    0660  system  system
 /dev/gsensor      0660  system  system
 /dev/msensor      0660  system  system
+/dev/als_ps       0660  system  system
 ```
 
 `init.mt6575.rc` en `on boot` (belt-and-suspenders para primer boot):
 ```
 chown system system /dev/hwmsensor
+chown system system /dev/als_ps
 chmod 0660 /dev/hwmsensor
+chmod 0660 /dev/als_ps
 ```
+
+Tambien se incluye el blob stock `bin/bmm050d` y su servicio init.
 
 **Resultado verificado tras reboot:**
 ```

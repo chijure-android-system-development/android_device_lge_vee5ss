@@ -41,6 +41,8 @@ lib/libutilitysw.so
 lib/libmatv_cust.so
 
 # ---- Sensores ----
+bin/bmm050d
+bin/msensord
 lib/hw/sensors.mt6575.so
 
 # ---- GPS ----

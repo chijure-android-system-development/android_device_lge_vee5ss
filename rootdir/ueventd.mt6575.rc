@@ -50,6 +50,7 @@
 /dev/hwmsensor            0660   system     system
 /dev/gsensor              0660   system     system
 /dev/msensor              0660   system     system
+/dev/als_ps               0660   system     system
 
 # Modem CCCI tty channels — gsm0710muxd opens ttyC0 after CCCI handshake
 /dev/ttyC0                0660   radio      radio

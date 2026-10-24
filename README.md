@@ -24,7 +24,8 @@ running device.
 
 ## Notes
 
-- `kernel` is the prebuilt kernel of the tested recovery image (md5
+- `kernel` is Linux 3.4.0 built from LG's E450g kernel source (#2, gcc 4.6,
+  Jun 15 2026), the one in the tested recovery image (md5
   `0e0225c37f064fc4b63007b34353db7f`, no MTK header; the packed image adds it).
   It replaced the kernel taken from `CWM_6.0.4.4.img`.
 - Recovery images are packed with the local `mtkbootimg` host tool.

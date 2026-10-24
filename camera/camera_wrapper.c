@@ -7,8 +7,9 @@
  *
  * The stock HAL also never sets video-frame-format, and CM's CameraSource
  * strcmp()s it unchecked, killing mediaserver when recording starts.  The
- * parameters are returned with video-frame-format=yuv420sp added (the
- * HAL's preview-format).
+ * parameters are returned with video-frame-format=yuv420p added: recording
+ * frames are planar (HAL_PIXEL_FORMAT_I420), unlike the semi-planar
+ * preview, and declaring them yuv420sp scrambled the video's colors.
  */
 
 #define LOG_TAG "vee5ss-camera"
@@ -76,7 +77,7 @@ static int vee5ss_get_camera_info(int camera_id, struct camera_info *info)
 }
 
 static const char kVideoFrameFormat[] = "video-frame-format=";
-static const char kVideoFrameFormatParam[] = ";video-frame-format=yuv420sp";
+static const char kVideoFrameFormatParam[] = ";video-frame-format=yuv420p";
 
 static camera_device_ops_t *g_stock_ops;
 static camera_device_ops_t g_ops;

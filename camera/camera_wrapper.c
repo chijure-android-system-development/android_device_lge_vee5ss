@@ -4,12 +4,18 @@
  * The stock MTK HAL reports a phantom second/front camera.  This wrapper keeps
  * the fix device-local by delegating to the stock blob and exposing only the
  * single physical rear camera.
+ *
+ * The stock HAL also never sets video-frame-format, and CM's CameraSource
+ * strcmp()s it unchecked, killing mediaserver when recording starts.  The
+ * parameters are returned with video-frame-format=yuv420sp added (the
+ * HAL's preview-format).
  */
 
 #define LOG_TAG "vee5ss-camera"
 
 #include <dlfcn.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <cutils/log.h>
@@ -69,9 +75,48 @@ static int vee5ss_get_camera_info(int camera_id, struct camera_info *info)
     return g_stock_module->get_camera_info(0, info);
 }
 
+static const char kVideoFrameFormat[] = "video-frame-format=";
+static const char kVideoFrameFormatParam[] = ";video-frame-format=yuv420sp";
+
+static camera_device_ops_t *g_stock_ops;
+static camera_device_ops_t g_ops;
+
+/* Always hands out a wrapper-owned copy, released by vee5ss_put_parameters. */
+static char *vee5ss_get_parameters(struct camera_device *dev)
+{
+    char *stock = g_stock_ops->get_parameters(dev);
+    char *params;
+    size_t len;
+
+    if (!stock)
+        return NULL;
+
+    len = strlen(stock);
+    params = malloc(len + sizeof(kVideoFrameFormatParam));
+    if (params) {
+        memcpy(params, stock, len + 1);
+        if (!strstr(stock, kVideoFrameFormat))
+            strcat(params, kVideoFrameFormatParam);
+    } else {
+        ALOGE("out of memory copying camera parameters");
+    }
+
+    g_stock_ops->put_parameters(dev, stock);
+    return params;
+}
+
+static void vee5ss_put_parameters(struct camera_device *dev, char *params)
+{
+    (void)dev;
+    free(params);
+}
+
 static int vee5ss_camera_open(const hw_module_t *module, const char *id,
         hw_device_t **device)
 {
+    camera_device_t *camera;
+    int ret;
+
     (void)module;
 
     if (load_stock_camera_hal())
@@ -80,7 +125,18 @@ static int vee5ss_camera_open(const hw_module_t *module, const char *id,
     if (strcmp(id, "0"))
         return -EINVAL;
 
-    return g_stock_module->common.methods->open(&g_stock_module->common, id, device);
+    ret = g_stock_module->common.methods->open(&g_stock_module->common, id, device);
+    if (ret)
+        return ret;
+
+    camera = (camera_device_t *)*device;
+    g_stock_ops = camera->ops;
+    g_ops = *g_stock_ops;
+    g_ops.get_parameters = vee5ss_get_parameters;
+    g_ops.put_parameters = vee5ss_put_parameters;
+    camera->ops = &g_ops;
+
+    return 0;
 }
 
 static hw_module_methods_t g_methods = {

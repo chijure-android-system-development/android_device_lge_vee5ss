@@ -63,3 +63,9 @@ chmod 0660 /dev/ttyC0 /dev/ttyC1 /dev/ttyC2
 
 create_node /dev/devmap 196 0
 chmod 0666 /dev/devmap
+
+# MediaTek hardware video codec (vcodec_kernel_driver), used by the
+# OMX.MTK.VIDEO.* components in mediaserver.
+create_node /dev/Vcodec 160 0
+chown 1000.1013 /dev/Vcodec
+chmod 0660 /dev/Vcodec

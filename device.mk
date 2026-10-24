@@ -136,3 +136,21 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     MtkBt \
     com.lge.compat
+
+# ---- Codificadores de video por hardware MTK (OMX.MTK.VIDEO.ENCODER.*) ----
+PRODUCT_PACKAGES += \
+    libstagefrighthw \
+    libMtkOmxCore \
+    libMtkOmxVenc \
+    libvcodecdrv \
+    libvcodec_utility \
+    libvcodec_oal \
+    libstagefright_memutil \
+    libsched \
+    libh264dec_xa.ca9 \
+    libh264dec_customize \
+    libmp4dec_sa.ca9 \
+    libmp4dec_customize \
+    libvp8dec_xa.ca9 \
+    libmp4enc_xa.ca9 \
+    libh264enc_sa.ca9

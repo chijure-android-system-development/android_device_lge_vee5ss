@@ -64,18 +64,19 @@
 ]>
 <MediaSettings>
     <CamcorderProfiles cameraId="0">
-        <!-- 320x240 must be m4v: H.263 only takes the standard sizes
-             (128x96, 176x144, 352x288...) and SoftMPEG4Encoder fails to
-             initialize with it. -->
-        <EncoderProfile quality="high" fileFormat="3gp" duration="60">
+        <!-- Recorded by the MediaTek hardware encoders (OMX.MTK.VIDEO.ENCODER.*);
+             the camera's largest 4:3 preview size is 640x480. Not h264: CM's
+             MPEG4Writer cannot parse the codec config the MTK AVC encoder
+             emits (CHECK in makeAVCCodecSpecificData). -->
+        <EncoderProfile quality="high" fileFormat="mp4" duration="60">
             <Video codec="m4v"
-                   bitRate="360000"
-                   width="320"
-                   height="240"
-                   frameRate="15" />
-            <Audio codec="amrwb"
-                   bitRate="12650"
-                   sampleRate="16000"
+                   bitRate="3000000"
+                   width="640"
+                   height="480"
+                   frameRate="30" />
+            <Audio codec="aac"
+                   bitRate="96000"
+                   sampleRate="44100"
                    channels="1" />
         </EncoderProfile>
 
@@ -101,22 +102,22 @@
     <EncoderOutputFileFormat name="mp4" />
 
     <VideoEncoderCap name="m4v" enabled="true"
-        minBitRate="64000" maxBitRate="1000000"
-        minFrameWidth="176" maxFrameWidth="320"
-        minFrameHeight="144" maxFrameHeight="240"
-        minFrameRate="1" maxFrameRate="15" />
+        minBitRate="64000" maxBitRate="4000000"
+        minFrameWidth="176" maxFrameWidth="640"
+        minFrameHeight="144" maxFrameHeight="480"
+        minFrameRate="1" maxFrameRate="30" />
 
     <VideoEncoderCap name="h263" enabled="true"
-        minBitRate="64000" maxBitRate="420000"
-        minFrameWidth="176" maxFrameWidth="320"
-        minFrameHeight="144" maxFrameHeight="240"
-        minFrameRate="1" maxFrameRate="15" />
+        minBitRate="64000" maxBitRate="1000000"
+        minFrameWidth="176" maxFrameWidth="352"
+        minFrameHeight="144" maxFrameHeight="288"
+        minFrameRate="1" maxFrameRate="30" />
 
     <VideoEncoderCap name="h264" enabled="false"
-        minBitRate="64000" maxBitRate="1000000"
-        minFrameWidth="176" maxFrameWidth="320"
-        minFrameHeight="144" maxFrameHeight="240"
-        minFrameRate="1" maxFrameRate="15" />
+        minBitRate="64000" maxBitRate="4000000"
+        minFrameWidth="176" maxFrameWidth="640"
+        minFrameHeight="144" maxFrameHeight="480"
+        minFrameRate="1" maxFrameRate="30" />
 
     <AudioEncoderCap name="amrnb" enabled="true"
         minBitRate="5525" maxBitRate="12200"

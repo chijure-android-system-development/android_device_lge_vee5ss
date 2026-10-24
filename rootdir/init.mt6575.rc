@@ -32,7 +32,7 @@ on fs
 on post-fs-data
     # NVRAM dirs — must exist before nvram_daemon runs.
     # Created here (not post-fs) because /data is not mounted in post-fs.
-    mkdir /data/nvram 0770 root system
+    mkdir /data/nvram 0771 root system
     mkdir /data/nvram/md 0770 root system
 
     # MTP / USB media

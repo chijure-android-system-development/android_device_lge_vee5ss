@@ -1285,3 +1285,9 @@ ANR). `lge-compat/` aporta las clases de LG que MtkBt enlaza
 (`ConfigBuildFlags.CAPP_MDM = false`, `cappuccino.Mdm.getInstance() = null`) y
 va al final del `BOOTCLASSPATH` en `rootdir/init.rc`. Envío OPP al Pixel 2 XL
 verificado.
+`mtkbt` guarda los dispositivos emparejados y sus claves en los **archivos**
+`/data/@btmtk/devdb` y `/data/@btmtk/le` (así están en el `/data` stock): el
+`init.rc` no debe crearlos como directorios, o ninguna clave se guarda y el
+otro teléfono falla al reconectar ("conexión incorrecta"). `/data/nvram` va
+`0771` para que `mtkbt` llegue a `APCFG/APRDEB/BT_Addr`. Recepción OPP desde
+el Pixel 2 XL verificada.

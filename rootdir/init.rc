@@ -172,9 +172,7 @@ on post-fs-data
     mkdir /data/misc/bluetoothd 0770 bluetooth bluetooth
     mkdir /data/misc/bluetooth 0770 system system
     mkdir /data/@btmtk 0770 bluetooth bluetooth
-    mkdir /data/@btmtk/devdb 0770 bluetooth bluetooth
     mkdir /data/@btmtk/profile 0770 bluetooth bluetooth
-    mkdir /data/@btmtk/le 0770 bluetooth bluetooth
     mkdir /data/nvram 0777 root bluetooth
     mkdir /data/nvram/APCFG 0777 root bluetooth
     mkdir /data/nvram/APCFG/APRDEB 0777 root bluetooth

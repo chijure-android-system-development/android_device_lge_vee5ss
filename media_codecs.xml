@@ -2,6 +2,16 @@
 <!-- Minimal codec list for CM10 software encoders on vee5ss. -->
 <MediaCodecs>
     <Decoders>
+        <!-- MediaTek hardware video decoders, under the aliases the
+             device's libstagefrighthw wrapper publishes so CM copies their
+             output to the screen (see device/lge/vee5ss/omx). The software
+             AVC decoder only handles Baseline. -->
+        <MediaCodec name="OMX.google.MTK.VIDEO.DECODER.MPEG4" type="video/mp4v-es" />
+        <MediaCodec name="OMX.google.MTK.VIDEO.DECODER.H263" type="video/3gpp" />
+        <MediaCodec name="OMX.google.MTK.VIDEO.DECODER.AVC" type="video/avc" >
+            <Quirk name="wants-NAL-fragments" />
+        </MediaCodec>
+        <MediaCodec name="OMX.google.MTK.VIDEO.DECODER.VPX" type="video/x-vnd.on2.vp8" />
         <MediaCodec name="OMX.google.mpeg4.decoder" type="video/mp4v-es" />
         <MediaCodec name="OMX.google.h263.decoder" type="video/3gpp" />
         <MediaCodec name="OMX.google.h264.decoder" type="video/avc" />

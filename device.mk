@@ -137,11 +137,13 @@ PRODUCT_PACKAGES += \
     MtkBt \
     com.lge.compat
 
-# ---- Codificadores de video por hardware MTK (OMX.MTK.VIDEO.ENCODER.*) ----
+# ---- Codificadores y decodificadores de video por hardware MTK (omx/) ----
 PRODUCT_PACKAGES += \
     libstagefrighthw \
+    libstagefrighthw_mtk \
     libMtkOmxCore \
     libMtkOmxVenc \
+    libMtkOmxVdec \
     libvcodecdrv \
     libvcodec_utility \
     libvcodec_oal \

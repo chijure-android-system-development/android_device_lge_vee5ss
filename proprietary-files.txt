@@ -157,9 +157,10 @@ lib/modules/m4u.ko
 lib/modules/mtk_drvb.ko
 lib/modules/sec.ko
 lib/modules/vcodec_kernel_driver.ko
-lib/libstagefrighthw.so
+lib/libstagefrighthw.so:lib/libstagefrighthw_mtk.so
 lib/libMtkOmxCore.so
 lib/libMtkOmxVenc.so
+lib/libMtkOmxVdec.so
 lib/libvcodecdrv.so
 lib/libvcodec_utility.so
 lib/libvcodec_oal.so

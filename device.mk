@@ -83,7 +83,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     wlan.lge.concurrency=SCC \
     wlan.lge.supportsimaka=YES \
     gps.solution.combo.chip=1 \
-    rild.libpath=/system/lib/mtk-ril.so \
+    rild.libpath=/system/lib/libvee5ss-ril.so \
     telephony.lteOnGsmDevice=0 \
     ro.com.android.dataroaming=false \
     ro.config.low_ram=true \
@@ -126,6 +126,7 @@ PRODUCT_PACKAGES += \
     libmtk_symbols \
     power.mt6575 \
     rild \
+    libvee5ss-ril \
     libril \
     mtk_agpsd \
     nvram_agent_binder \

@@ -222,7 +222,10 @@ static int is_blinking(const struct led_request *req)
 /* Picks what the LED shows; called with g_lock held. */
 static void update_rgb_locked(void)
 {
-    static struct led_request shown = { 0, LG_FLASH_OFF, 0, 0 };
+    /* Unknown at first: the bootloader leaves a power-on pattern running
+     * on the LP5521, so the first request must reach the chip even if it
+     * is "off". */
+    static struct led_request shown = { -1, -1, -1, -1 };
     struct led_request next = { 0, LG_FLASH_OFF, 0, 0 };
 
     if (is_lit(&g_notification)) {

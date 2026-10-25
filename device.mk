@@ -34,10 +34,6 @@ PRODUCT_PACKAGES += \
     libcameracustom \
     libcameraprofile
 
-# ---- Bluetooth: MtkBt.apk stock reemplaza a Bluetooth.apk (como en stock) ----
-PRODUCT_PACKAGES += \
-    MtkBt
-
 # ---- Codificadores y decodificadores de video por hardware MTK (omx/) ----
 PRODUCT_PACKAGES += \
     libstagefrighthw \

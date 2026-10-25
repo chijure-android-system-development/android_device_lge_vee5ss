@@ -305,6 +305,10 @@ service mnld /system/xbin/mnld
 # GPS power/state nodes, written by mnld. They only appear once the MT6620
 # is up, after "on boot", so they are handed to gps here.
 on property:sys.boot_completed=1
+    # Like LG's EmotionalLedService: the bootloader's power-on pattern on
+    # the home key LED runs until boot completes; the lights HAL takes
+    # over from here.
+    write /sys/bus/i2c/drivers/lp5521/1-0032/led_pattern 0
     chown gps gps /sys/class/gpsdrv/gps/pwrctl
     chown gps gps /sys/class/gpsdrv/gps/suspend
     chown gps gps /sys/class/gpsdrv/gps/state
@@ -387,3 +391,8 @@ service iprenew_wlan0 /system/bin/dhcpcd -nK
     class main
     disabled
     oneshot
+
+# Shutdown and reboot show LG's pattern 6, as EmotionalLedService does on
+# ACTION_SHUTDOWN (the lights HAL stops writing once this is set).
+on property:sys.shutdown.requested=*
+    write /sys/bus/i2c/drivers/lp5521/1-0032/led_pattern 6

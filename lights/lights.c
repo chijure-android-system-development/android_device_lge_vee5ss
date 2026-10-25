@@ -25,10 +25,15 @@
  *    and flashes for low battery, so: solid green at 100% -> 4, other
  *    solid -> 3, flashing -> nothing. A notification takes precedence.
  *  - attention: stock only drives a jogball LED, absent here.
+ *  - boot and shutdown, also from EmotionalLedService: the bootloader's
+ *    power-on pattern keeps running until boot completes, and shutdown or
+ *    reboot shows pattern 6. init.mt6575.rc does both; the HAL leaves the
+ *    LED alone until boot has completed and once shutdown is requested.
  */
 #define LOG_TAG "lights"
 
 #include <cutils/log.h>
+#include <cutils/properties.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -219,14 +224,29 @@ static int is_blinking(const struct led_request *req)
             req->onMS > 0 && req->offMS > 0;
 }
 
+/* Whether init's boot or shutdown handling owns the LED right now. */
+static int led_owned_by_init(void)
+{
+    char value[PROPERTY_VALUE_MAX];
+
+    property_get("sys.shutdown.requested", value, "");
+    if (value[0] != '\0')
+        return 1;
+    property_get("sys.boot_completed", value, "0");
+    return strcmp(value, "1") != 0;
+}
+
 /* Picks what the LED shows; called with g_lock held. */
 static void update_rgb_locked(void)
 {
-    /* Unknown at first: the bootloader leaves a power-on pattern running
-     * on the LP5521, so the first request must reach the chip even if it
-     * is "off". */
+    /* Unknown at first: init changes the LED behind the HAL's back at
+     * boot, so the first request must reach the chip even if it is
+     * "off". */
     static struct led_request shown = { -1, -1, -1, -1 };
     struct led_request next = { 0, LG_FLASH_OFF, 0, 0 };
+
+    if (led_owned_by_init())
+        return;
 
     if (is_lit(&g_notification)) {
         next = g_notification;

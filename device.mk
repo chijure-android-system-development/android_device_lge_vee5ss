@@ -7,14 +7,17 @@ PRODUCT_MODEL        := LG-E450g
 PRODUCT_MANUFACTURER := LGE
 
 # ---- Pantalla 480x800 WVGA, 240 dpi; 512 MB RAM ----
-$(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
-
 PRODUCT_AAPT_CONFIG      := normal hdpi
 PRODUCT_AAPT_PREF_CONFIG := hdpi
 
+# Dalvik heap as on the stock E450g (phone-hdpi-512-dalvik-heap.mk has a
+# 48m growth limit).
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240 \
-    persist.sys.usb.config=mtp,adb
+    persist.sys.usb.config=mtp,adb \
+    dalvik.vm.heapstartsize=5m \
+    dalvik.vm.heapgrowthlimit=64m \
+    dalvik.vm.heapsize=128m
 
 # ---- Init: init.mt6575.rc imports the common one ----
 PRODUCT_COPY_FILES += \
